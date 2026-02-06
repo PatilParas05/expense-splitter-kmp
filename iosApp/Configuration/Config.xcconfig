@@ -1,0 +1,7 @@
+TEAM_ID=
+
+PRODUCT_NAME=ExpenseSplitter
+PRODUCT_BUNDLE_IDENTIFIER=org.paraspatil.expensesplitter.ExpenseSplitter$(TEAM_ID)
+
+CURRENT_PROJECT_VERSION=1
+MARKETING_VERSION=1.0
