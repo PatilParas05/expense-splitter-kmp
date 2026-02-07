@@ -11,8 +11,8 @@ class CalculateBalancesTest {
 
     @Test
     fun simpleSplitWorks(){
-        val alice = Person("1", "Alice")
-        val bob = Person("2", "Bob")
+        val alice = Person("1", "Amit")
+        val bob = Person("2", "Sumit")
 
         val expense= Expense(
             id = "e1",
@@ -34,8 +34,8 @@ class CalculateBalancesTest {
     }
 
     fun multipleExpensesAreHandledCorrectly() {
-        val alice = Person("1", "Alice")
-        val bob = Person("2", "Bob")
+        val alice = Person("1", "Amit")
+        val bob = Person("2", "Sumit")
         val dinner = Expense(
             id = "e1",
             amount = 1000.0,
@@ -64,8 +64,8 @@ class CalculateBalancesTest {
 
     }
     fun unevenSplitWorks(){
-        val alice = Person("1", "Alice")
-        val bob = Person("2", "Bob")
+        val alice = Person("1", "Amit")
+        val bob = Person("2", "Sumit")
 
         val expense= Expense(
             id = "e1",
