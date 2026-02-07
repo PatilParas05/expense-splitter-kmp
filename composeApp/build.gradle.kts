@@ -66,5 +66,8 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
 
