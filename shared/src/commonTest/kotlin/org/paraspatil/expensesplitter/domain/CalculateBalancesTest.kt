@@ -1,6 +1,5 @@
-package org.paraspatil.expensesplitter
+package org.paraspatil.expensesplitter.domain
 
-import org.paraspatil.expensesplitter.domain.calculateBalances
 import org.paraspatil.expensesplitter.domain.model.Expense
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.model.Split
@@ -20,7 +19,7 @@ class CalculateBalancesTest {
             paidBy = "1",
             splits = listOf(
                 Split("1", 500.0),
-                Split("2",500.0)
+                Split("2", 500.0)
 
             )
         )
@@ -28,8 +27,8 @@ class CalculateBalancesTest {
             expenses = listOf(expense),
             listOf(alice, bob)
         )
-        assertEquals(500.0,balances["1"])
-        assertEquals(-500.0,balances["2"])
+        assertEquals(500.0, balances["1"])
+        assertEquals(-500.0, balances["2"])
 
     }
 
@@ -42,7 +41,7 @@ class CalculateBalancesTest {
             paidBy = "1",
             splits = listOf(
                 Split("1", 500.0),
-                Split("2",500.0)
+                Split("2", 500.0)
             )
         )
 
@@ -51,16 +50,16 @@ class CalculateBalancesTest {
             amount = 400.0,
             paidBy = "2",
             splits = listOf(
-                Split("1",200.0),
-                Split("2",200.0)
+                Split("1", 200.0),
+                Split("2", 200.0)
             )
         )
         val balances = calculateBalances(
             expenses = listOf(dinner, taxi),
             listOf(alice, bob)
         )
-        assertEquals(300.0,balances["1"])
-        assertEquals(-300.0,balances["2"])
+        assertEquals(300.0, balances["1"])
+        assertEquals(-300.0, balances["2"])
 
     }
     fun unevenSplitWorks(){
@@ -73,15 +72,15 @@ class CalculateBalancesTest {
             paidBy = "1",
             splits = listOf(
                 Split("1", 700.0),
-                Split("2",300.0)
-                )
+                Split("2", 300.0)
             )
+        )
         val balances = calculateBalances(
             expenses = listOf(expense),
             persons = listOf(alice, bob)
         )
-        assertEquals(300.0,balances["1"])
-        assertEquals(-700.0,balances["2"])
+        assertEquals(300.0, balances["1"])
+        assertEquals(-700.0, balances["2"])
 
 
     }

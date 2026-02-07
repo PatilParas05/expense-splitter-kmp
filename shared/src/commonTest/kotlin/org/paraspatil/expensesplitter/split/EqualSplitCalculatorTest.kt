@@ -1,4 +1,4 @@
-package org.paraspatil.expensesplitter
+package org.paraspatil.expensesplitter.split
 
 import org.paraspatil.expensesplitter.domain.split.EqualSplitCalculator
 import kotlin.test.Test

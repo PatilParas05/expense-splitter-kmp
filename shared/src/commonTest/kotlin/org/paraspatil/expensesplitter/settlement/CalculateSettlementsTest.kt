@@ -1,4 +1,4 @@
-package org.paraspatil.expensesplitter
+package org.paraspatil.expensesplitter.settlement
 
 import org.paraspatil.expensesplitter.domain.settlement.Settlements
 import org.paraspatil.expensesplitter.domain.settlement.calculateSettlements
@@ -17,7 +17,7 @@ class CalculateSettlementsTest {
         assertEquals(
             listOf(
                 Settlements("sumit", "amit", 200.0),
-                Settlements("vinit","amit",100.0)
+                Settlements("vinit", "amit", 100.0)
             ),
             result
         )
