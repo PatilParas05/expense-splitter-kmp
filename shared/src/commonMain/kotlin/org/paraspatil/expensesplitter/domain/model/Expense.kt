@@ -4,5 +4,6 @@ data class Expense(
     val id : String,
     val amount : Double,
     val paidBy : String,
-    val splits : List<Split>
+    val splits : List<Split>,
+    val sharedWith : List<Person>
 )
