@@ -34,6 +34,14 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        val androidMain by getting {
+            dependencies {
+                val mokoMvvmVersion = "0.16.1"
+                implementation("dev.icerock.moko:mvvm-core:$mokoMvvmVersion")
+                implementation("dev.icerock.moko:mvvm-flow-compose:$mokoMvvmVersion")
+
+            }
+        }
     }
 }
 
