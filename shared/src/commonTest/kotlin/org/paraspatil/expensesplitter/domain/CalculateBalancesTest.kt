@@ -32,6 +32,7 @@ class CalculateBalancesTest {
 
     }
 
+    @Test
     fun multipleExpensesAreHandledCorrectly() {
         val alice = Person("1", "Amit")
         val bob = Person("2", "Sumit")
@@ -62,6 +63,7 @@ class CalculateBalancesTest {
         assertEquals(-300.0, balances["2"])
 
     }
+    @Test
     fun unevenSplitWorks(){
         val alice = Person("1", "Amit")
         val bob = Person("2", "Sumit")

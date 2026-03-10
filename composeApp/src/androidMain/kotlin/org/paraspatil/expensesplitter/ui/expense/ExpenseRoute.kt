@@ -12,13 +12,12 @@ fun ExpenseRoute(
     val state by viewModel.uiState.collectAsState()
 
     ExpenseScreen(
+        persons = state.persons,
+        expenses = state.expenses,
         settlements = state.settlements,
-        balances = state.balances,
-        onAddBalance = { name, amount ->
-            viewModel.addBalances(name,amount)
-            },
-        onCalculate = {
-            viewModel.calculate()
-        }
+        onAddPerson = { viewModel.addPerson(it) },
+        onAddExpense = { amount, paidBy -> viewModel.addExpense(amount, paidBy) },
+        onCalculate = { viewModel.calculate() }
     )
 }
+
