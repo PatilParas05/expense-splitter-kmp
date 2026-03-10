@@ -24,7 +24,9 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-            // put your Multiplatform dependencies here
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+            implementation("dev.icerock.moko:mvvm-core:0.16.1")
+            implementation("com.benasher44:uuid:0.8.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -41,17 +43,6 @@ android {
     }
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-}
-kotlin {
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-                implementation("dev.icerock.moko:mvvm-core:0.16.1")
-                implementation("com.benasher44:uuid:0.8.0")
-            }
-        }
     }
 }
 
