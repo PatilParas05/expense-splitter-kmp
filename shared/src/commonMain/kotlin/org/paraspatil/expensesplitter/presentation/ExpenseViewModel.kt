@@ -47,9 +47,7 @@ class ExpenseViewModel(
             id = uuid4().toString(),
             amount = amount,
             paidBy = paidBy,
-            sharedWith = persons,
             splits = splits
-
         )
         _uiState.update {
             it.copy(expenses = it.expenses + expense)
@@ -58,17 +56,12 @@ class ExpenseViewModel(
 
     fun calculate() {
         val result = useCase.execute(_uiState.value.expenses, _uiState.value.persons)
-
         _uiState.update {
-            it.copy(settlements = result.settlements)
-
-        }
-    }
-    fun addBalances(name: String, amount: Double) {
-        _uiState.update { current ->
-            current.copy(
-                balances = current.balances + (name to amount)
+            it.copy(
+                settlements = result.settlements,
+                balances = result.balances
             )
         }
     }
 }
+
