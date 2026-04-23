@@ -1,8 +1,11 @@
 package org.paraspatil.expensesplitter.domain.split
 
+import org.paraspatil.expensesplitter.domain.model.Split
+
 interface SplitCalculator {
-    fun calculate(
-        totalAmount: Double,
-        participants: List<String>,
-    ): Map<String, Double>
+    fun calculateSplits(
+        amount: Double,
+        personIds: List<String>,
+        params : Map<String, Double> = emptyMap()
+    ): List<Split>
 }
