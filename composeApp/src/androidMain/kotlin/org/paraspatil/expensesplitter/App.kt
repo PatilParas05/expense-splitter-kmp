@@ -2,19 +2,18 @@ package org.paraspatil.expensesplitter
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
-import org.paraspatil.expensesplitter.domain.usecase.CalculateExpenseUseCase
+import dev.icerock.moko.mvvm.compose.getViewModel
+import dev.icerock.moko.mvvm.compose.viewModelFactory
 import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
-import org.paraspatil.expensesplitter.ui.expense.ExpenseRoute
+import org.paraspatil.expensesplitter.ui.screens.ExpenseScreen
 
 @Composable
 fun App() {
     MaterialTheme {
-        val viewModel: ExpenseViewModel = viewModel {
-            ExpenseViewModel(
-                useCase = CalculateExpenseUseCase()
-            )
-        }
-        ExpenseRoute(viewModel = viewModel)
+        val viewModel = getViewModel(
+            Unit,
+            viewModelFactory { ExpenseViewModel() }
+        )
+        ExpenseScreen(viewModel = viewModel)
     }
 }

@@ -25,7 +25,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-            implementation("dev.icerock.moko:mvvm-core:0.16.1")
+            api("dev.icerock.moko:mvvm-core:0.16.1")
             implementation("com.benasher44:uuid:0.8.0")
         }
         commonTest.dependencies {
@@ -45,4 +45,3 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
-
