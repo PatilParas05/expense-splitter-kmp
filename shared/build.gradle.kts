@@ -11,6 +11,14 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
+    js(IR) {
+        browser {
+            commonWebpackConfig {
+                outputFileName = "app.js"
+            }
+        }
+        binaries.executable()
+    }
     
     listOf(
         iosArm64(),
