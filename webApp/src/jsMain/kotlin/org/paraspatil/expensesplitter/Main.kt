@@ -1,14 +1,17 @@
 package org.paraspatil.expensesplitter
 
-import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.window.CanvasBasedWindow
+import org.jetbrains.skiko.wasm.onWasmReady
 
-fun main (){
-    renderComposable(rootElementId = "root") {
-        App()
+@OptIn(ExperimentalComposeUiApi::class)
+fun main() {
+    onWasmReady {
+        CanvasBasedWindow(
+            title = "Expense Splitter",
+            canvasElementId = "compose-output"
+        ) {
+            App()
+        }
     }
-}
-
-@Composable
-fun App(){
-
 }

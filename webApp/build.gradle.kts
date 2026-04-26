@@ -44,6 +44,7 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
+                implementation(project(":composeApp"))
                 implementation(libs.compose.ui)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.8.1")
             }

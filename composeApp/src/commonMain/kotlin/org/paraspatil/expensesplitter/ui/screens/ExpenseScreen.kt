@@ -181,7 +181,7 @@ private fun PersonCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(person.name, style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    "Balance: ₹${String.format("%.2f", balance)}",
+                    "Balance: ₹${((balance * 100).toInt() / 100.0)}",
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -288,7 +288,7 @@ private fun ExpenseCard(
                         Text(expense.description, style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                Text("₹${String.format("%.2f", expense.amount)}", style = MaterialTheme.typography.bodyLarge)
+                Text("₹${((expense.amount * 100).toInt() / 100.0)}", style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
@@ -312,7 +312,14 @@ private fun SettlementCard(fromName: String, toName: String, amount: Double) {
                 Text("↓ owes", style = MaterialTheme.typography.bodySmall)
                 Text(toName, style = MaterialTheme.typography.bodyLarge)
             }
-            Text("₹${String.format("%.2f", amount)}", style = MaterialTheme.typography.headlineSmall)
+
+            Text("₹${((amount * 100).toInt() / 100.0)}", style = MaterialTheme.typography.headlineSmall)
         }
     }
+}
+fun Double.format(decimals: Int): String {
+    val parts = this.toString().split(".")
+    if (parts.size == 1) return "${parts[0]}.${"0".repeat(decimals)}"
+    val decimalPart = parts[1].padEnd(decimals, '0').take(decimals)
+    return "${parts[0]}.$decimalPart"
 }
