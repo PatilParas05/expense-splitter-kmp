@@ -10,7 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.collectAsState
 import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
 import org.paraspatil.expensesplitter.presentation.ExpenseUiState
 import org.paraspatil.expensesplitter.domain.model.Person
@@ -19,7 +19,7 @@ import org.paraspatil.expensesplitter.domain.model.Expense
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseScreen(viewModel: ExpenseViewModel) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),

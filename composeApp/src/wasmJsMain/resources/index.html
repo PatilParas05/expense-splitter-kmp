@@ -4,20 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Splitter</title>
-    <script src="skiko.js"></script>
     <style>
-        /* This ensures the app takes up the full screen */
-        html, body, #compose-output {
+        html, body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
             overflow: hidden;
         }
+        #compose-output {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
-<canvas id="compose-output"></canvas>
-<script src="webApp.js"></script>
+    <div id="compose-output"></div>
+    <script src="webApp.js"></script>
 </body>
 </html>

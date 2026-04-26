@@ -1,17 +1,20 @@
 package org.paraspatil.expensesplitter.presentation
 
 import com.benasher44.uuid.uuid4
-import dev.icerock.moko.mvvm.viewmodel.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.paraspatil.expensesplitter.domain.model.Expense
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.split.EqualSplitCalculator
 import org.paraspatil.expensesplitter.domain.usecase.CalculateExpenseUseCase
 
-class ExpenseViewModel : ViewModel() {
+class ExpenseViewModel  {
+    private val scope = CoroutineScope(Dispatchers.Main)
     private val _uiState = MutableStateFlow(ExpenseUiState())
-    val uiState: StateFlow<ExpenseUiState> = _uiState
+    val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
     private val calculateExpenseUseCase = CalculateExpenseUseCase()
     private val splitCalculator = EqualSplitCalculator()

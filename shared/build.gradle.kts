@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,15 +12,8 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    js(IR) {
-        browser {
-            commonWebpackConfig {
-                outputFileName = "app.js"
-            }
-        }
-        binaries.executable()
-    }
-    
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser(); binaries.executable() }
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -33,11 +27,15 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-            api("dev.icerock.moko:mvvm-core:0.16.1")
             implementation("com.benasher44:uuid:0.8.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+    }
+    configurations.all {
+        resolutionStrategy {
+            exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-wasm")
         }
     }
 }

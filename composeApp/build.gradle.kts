@@ -13,11 +13,14 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    js(IR) {
-        browser()
-        binaries.library()
+    wasmJs {
+        browser {
+            commonWebpackConfig {
+                outputFileName = "webApp.js"
+            }
+        }
+        binaries.executable()
     }
-    
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -33,9 +36,12 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.moko.mvvm.core)
-            implementation(libs.moko.mvvm.compose)
             implementation(projects.shared)
+        }
+        val wasmJsMain by getting {
+            dependencies {
+
+            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
