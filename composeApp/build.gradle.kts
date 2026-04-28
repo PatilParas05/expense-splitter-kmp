@@ -21,6 +21,8 @@ kotlin {
         }
         binaries.executable()
     }
+    jvm("desktop")
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
@@ -41,6 +43,12 @@ kotlin {
         val wasmJsMain by getting {
             dependencies {
 
+            }
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1")
             }
         }
         commonTest.dependencies {
@@ -79,4 +87,19 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+}
+compose.desktop {
+    application {
+        mainClass = "org.paraspatil.expensesplitter.MainKt"
+
+        nativeDistributions {
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,  // Mac
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,  // Windows
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb   // Linux
+            )
+            packageName = "ExpenseSplitter"
+            packageVersion = "1.0.0"
+        }
+    }
 }
