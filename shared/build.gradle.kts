@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,38 +10,53 @@ plugins {
 
 kotlin {
     androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
     }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs { browser(); binaries.executable() }
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
+
+    jvm("desktop")
+
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
         }
     }
-    jvm()
-    
+
     sourceSets {
+        //  commonMain — NO Room here, only WASM-safe libs
         commonMain.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-            implementation("com.benasher44:uuid:0.8.0")
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.uuid)
+            api(libs.koin.core)              // Koin for all platforms
+        }
+
+        //  Android + Desktop — Room
+        androidMain.dependencies {
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.koin.android)
         }
+
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.sqlite.bundled)
+            }
+        }
+
+        //  WASM — LocalStorage, no Room
+        val wasmJsMain by getting {
+            dependencies {
+
+            }
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-        }
-    }
-    
-    configurations.all {
-        resolutionStrategy {
-            exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-wasm")
         }
     }
 }
@@ -50,13 +65,13 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+// Room KSP — only for platforms that support it, NOT wasmJs
 dependencies {
     add("kspCommonMainMetadata", libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-    add("kspWasmJs", libs.androidx.room.compiler)
-    add("kspJvm", libs.androidx.room.compiler)
+    add("kspDesktop", libs.androidx.room.compiler)
 }
 
 android {
