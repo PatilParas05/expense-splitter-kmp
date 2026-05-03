@@ -5,6 +5,6 @@ data class Expense(
     val id : String = uuid4().toString(),
     val amount : Double,
     val paidBy : String,
-    val splits : List<Split>,
+    val splits : List<Split> =emptyList(),
     val description: String = ""
 )
