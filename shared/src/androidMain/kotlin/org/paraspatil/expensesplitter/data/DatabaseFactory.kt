@@ -8,5 +8,7 @@ fun createDatabase(context: Context): AppDatabase {
         context,
         AppDatabase::class.java,
         "expense_splitter.db"
-    ).build()
+    )
+        .fallbackToDestructiveMigration()
+        .build()
 }

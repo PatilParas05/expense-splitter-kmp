@@ -22,6 +22,7 @@ class AndroidExpenseRepository (
                 amount = it.amount,
                 paidBy = it.paidBy,
                 description = it.description,
+                splits = Converters().fromSplitsJson(it.splitsJson)
             )
         }
         }
@@ -35,7 +36,8 @@ class AndroidExpenseRepository (
                 id = expense.id,
                 amount = expense.amount,
                 paidBy = expense.paidBy,
-                description = expense.description
+                description = expense.description,
+                splitsJson = Converters().toSplitsJson(expense.splits)
             )
         )
 

@@ -24,6 +24,7 @@ class DesktopExpenseRepository (
                     amount = it.amount,
                     paidBy = it.paidBy,
                     description = it.description,
+                    splits = Converters().fromSplitsJson(it.splitsJson)
                 )
             }
         }
@@ -31,7 +32,14 @@ class DesktopExpenseRepository (
         dao.insertPerson(PersonEntity(id = person.id, name = person.name))
 
     override suspend fun insertExpense(expense: Expense) =
-        dao.insertExpense(ExpenseEntity(id = expense.id, amount = expense.amount, paidBy = expense.paidBy, description = expense.description))
+        dao.insertExpense(ExpenseEntity(
+            id = expense.id,
+            amount = expense.amount,
+            paidBy = expense.paidBy,
+            description = expense.description,
+            splitsJson = Converters().toSplitsJson(expense.splits)
+            )
+        )
 
     override suspend fun deletePerson(id: String) =dao.deletePerson(id)
 

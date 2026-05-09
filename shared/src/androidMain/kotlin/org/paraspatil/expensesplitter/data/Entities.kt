@@ -15,5 +15,6 @@ data class ExpenseEntity(
     @PrimaryKey val id: String,
     val amount: Double,
     val paidBy: String,
-    val description: String
+    val description: String,
+    val splitsJson: String = "[]"
 )

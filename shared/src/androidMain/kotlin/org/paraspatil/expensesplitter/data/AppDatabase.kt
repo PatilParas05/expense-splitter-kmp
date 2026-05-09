@@ -5,6 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -31,7 +33,8 @@ interface ExpenseDao {
     suspend fun deleteAllExpenses()
 }
 
-@Database(entities = [PersonEntity::class, ExpenseEntity::class], version = 1,exportSchema = false )
+@Database(entities = [PersonEntity::class, ExpenseEntity::class], version = 2,exportSchema = false )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
 }

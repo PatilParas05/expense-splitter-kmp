@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.paraspatil.expensesplitter.data.ExpenseRepository
 import org.paraspatil.expensesplitter.domain.model.Expense
@@ -25,22 +26,26 @@ class ExpenseViewModel (
 
     init {
         scope.launch {
-            repository.getAllPeople().collect { people ->
-                _uiState.value = _uiState.value.copy(people = people)
-                recalculate()
-            }
-        }
-        scope.launch {
-            repository.getAllExpenses().collect { expenses ->
-                _uiState.value = _uiState.value.copy(expenses = expenses)
-                recalculate()
+            combine(
+            repository.getAllPeople(),
+            repository.getAllExpenses()
+            ){ people, expenses ->
+                Pair(people, expenses)
+            }.collect { (people, expenses) ->
+                val result = calculateExpenseUseCase(people, expenses)
+                _uiState.value = _uiState.value.copy(
+                    people = people,
+                    expenses = expenses,
+                    balances = result.balances,
+                    settlements = result.settlements
+                )
             }
         }
     }
     private fun recalculate(){
-        val currentState = _uiState.value
-        val result = calculateExpenseUseCase(currentState.people, currentState.expenses)
-        _uiState.value = currentState.copy(
+        val state = _uiState.value
+        val result = calculateExpenseUseCase(state.people, state.expenses)
+        _uiState.value = state.copy(
             balances = result.balances,
             settlements = result.settlements,
         )

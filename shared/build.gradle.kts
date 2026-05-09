@@ -26,7 +26,7 @@ kotlin {
     }
 
     sourceSets {
-        //  commonMain — NO Room here, only WASM-safe libs
+        //  commonMain — NO Room here
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.uuid)
@@ -67,7 +67,6 @@ room {
 
 // Room KSP — only for platforms that support it, NOT wasmJs
 dependencies {
-    add("kspCommonMainMetadata", libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
