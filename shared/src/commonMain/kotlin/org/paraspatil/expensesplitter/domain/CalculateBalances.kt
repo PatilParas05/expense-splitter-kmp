@@ -16,11 +16,11 @@ fun calculateBalances(
     //calculate balances
     expenses.forEach { expense ->
         balances[expense.paidBy] =
-            balances[expense.paidBy]!! + expense.amount
+            (balances[expense.paidBy] ?: 0.0) + expense.amount
 
         expense.splits.forEach { split ->
             balances[split.personId] =
-                balances[split.personId]!! - split.amount
+                (balances[split.personId] ?: 0.0) - split.amount
         }
     }
     return balances

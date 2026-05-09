@@ -27,6 +27,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(project(":shared"))
@@ -38,7 +39,7 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(projects.shared)
+            implementation(libs.koin.compose)
         }
         val wasmJsMain by getting {
             dependencies {

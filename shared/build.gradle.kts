@@ -62,7 +62,7 @@ kotlin {
 }
 
 room {
-    schemaDirectory("$projectDir/schemas")
+    schemaDirectory("schemas")
 }
 
 // Room KSP — only for platforms that support it, NOT wasmJs

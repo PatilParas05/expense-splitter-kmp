@@ -6,18 +6,45 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import org.paraspatil.expensesplitter.data.ExpenseRepository
 import org.paraspatil.expensesplitter.domain.model.Expense
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.split.EqualSplitCalculator
 import org.paraspatil.expensesplitter.domain.usecase.CalculateExpenseUseCase
 
-class ExpenseViewModel  {
+class ExpenseViewModel (
+    private val repository: ExpenseRepository
+) {
     private val scope = CoroutineScope(Dispatchers.Main)
     private val _uiState = MutableStateFlow(ExpenseUiState())
     val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
     private val calculateExpenseUseCase = CalculateExpenseUseCase()
     private val splitCalculator = EqualSplitCalculator()
+
+    init {
+        scope.launch {
+            repository.getAllPeople().collect { people ->
+                _uiState.value = _uiState.value.copy(people = people)
+                recalculate()
+            }
+        }
+        scope.launch {
+            repository.getAllExpenses().collect { expenses ->
+                _uiState.value = _uiState.value.copy(expenses = expenses)
+                recalculate()
+            }
+        }
+    }
+    private fun recalculate(){
+        val currentState = _uiState.value
+        val result = calculateExpenseUseCase(currentState.people, currentState.expenses)
+        _uiState.value = currentState.copy(
+            balances = result.balances,
+            settlements = result.settlements,
+        )
+    }
 
     fun addPerson(name: String) {
         if (name.isBlank()) return
@@ -26,6 +53,9 @@ class ExpenseViewModel  {
             id = uuid4().toString(),
             name = name.trim()
         )
+        scope.launch {
+            repository.insertPerson(newPerson)
+        }
         _uiState.value = currentState.copy(
             people = currentState.people + newPerson,
             newPersonName = "",
@@ -75,6 +105,9 @@ class ExpenseViewModel  {
                 splits = splits,
                 description = currentState.expenseDescription
             )
+            scope.launch {
+                repository.insertExpense(expense)
+            }
 
             val updatedExpenses = currentState.expenses + expense
 
@@ -113,6 +146,9 @@ class ExpenseViewModel  {
         val updatedExpenses = currentState.expenses.filter { expense ->
             expense.paidBy != personId && expense.splits.none { it.personId == personId }
         }
+        scope.launch {
+            repository.deletePerson(personId)
+        }
         
         val result = calculateExpenseUseCase(updatedPeople, updatedExpenses)
 
@@ -126,6 +162,9 @@ class ExpenseViewModel  {
     }
 
     fun reset() {
+        scope.launch {
+            repository.reset()
+        }
         _uiState.value = ExpenseUiState()
     }
 }
