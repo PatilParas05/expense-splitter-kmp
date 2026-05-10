@@ -4,8 +4,24 @@
     <meta charset="UTF-8">
     <title>Expense Splitter</title>
     <style>
-        body { margin: 0; background: #ffffff; }
-
+        * { box-sizing: border-box; }
+        html {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+        /* Make the Compose canvas fill and scroll naturally */
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
         #splash {
             position: fixed;
             inset: 0;
@@ -36,9 +52,7 @@
     <div id="splash-title">Expense Splitter</div>
 </div>
 
-<div id="compose-output"></div>
-
-<script src="webApp.js" type="application/javascript"></script>
+<script src="webApp.js"></script>
 
 <script>
     function hideSplash() {
@@ -48,23 +62,17 @@
         setTimeout(() => splash.remove(), 700);
     }
 
-    // Watch for Compose canvas being added
     const observer = new MutationObserver(() => {
-        const compose = document.getElementById('compose-output');
-        // Compose for Web adds a <canvas> element
-        if (compose && compose.querySelector('canvas')) {
+        const canvas = document.body.querySelector('canvas');
+        if (canvas) {
             observer.disconnect();
-            // Small delay so first frame is actually painted
+            // Force canvas to be tall enough to scroll
+            canvas.style.minHeight = '100vh';
             setTimeout(hideSplash, 300);
         }
     });
+    observer.observe(document.body, { childList: true, subtree: true });
 
-    observer.observe(document.getElementById('compose-output'), {
-        childList: true,
-        subtree: true   //  watch deeply, Compose nests its canvas
-    });
-
-    // Fallback — hide after 5s no matter what
     setTimeout(hideSplash, 5000);
 </script>
 </body>

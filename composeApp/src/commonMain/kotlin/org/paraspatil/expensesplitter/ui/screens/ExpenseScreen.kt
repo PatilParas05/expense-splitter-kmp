@@ -1,8 +1,8 @@
 package org.paraspatil.expensesplitter.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -21,104 +21,85 @@ import org.paraspatil.expensesplitter.domain.model.Expense
 fun ExpenseScreen(viewModel: ExpenseViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text("Expense Splitter") }
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 4.dp
+        ) {
+            Text(
+                text = "Expense Splitter",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
             )
         }
-    ) { paddingValues ->
-        LazyColumn(
+
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+                .defaultMinSize(minHeight = 800.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Add Person Section
-            item {
-                AddPersonCard(viewModel, uiState)
-            }
+            AddPersonCard(viewModel, uiState)
 
-            // People List
             if (uiState.people.isNotEmpty()) {
-                item {
-                    Text("People (${uiState.people.size})", style = MaterialTheme.typography.titleMedium)
-                }
-                items(uiState.people) { person ->
+                Text("People (${uiState.people.size})", style = MaterialTheme.typography.titleMedium)
+                uiState.people.forEach { person ->
                     PersonCard(person, uiState.balances, onDelete = { viewModel.removePerson(person.id) })
                 }
             }
 
-            // Add Expense Section
             if (uiState.people.isNotEmpty()) {
-                item {
-                    HorizontalDivider()
-                }
-                item {
-                    AddExpenseCard(viewModel, uiState)
-                }
+                HorizontalDivider()
+                AddExpenseCard(viewModel, uiState)
             }
 
-            // Expenses List
             if (uiState.expenses.isNotEmpty()) {
-                item {
-                    Text("Expenses (${uiState.expenses.size})", style = MaterialTheme.typography.titleMedium)
-                }
-                items(uiState.expenses) { expense ->
+                Text("Expenses (${uiState.expenses.size})", style = MaterialTheme.typography.titleMedium)
+                uiState.expenses.forEach { expense ->
                     ExpenseCard(expense, uiState.people)
                 }
             }
 
-            // Settlements Section
             if (uiState.settlements.isNotEmpty()) {
-                item {
-                    HorizontalDivider()
-                }
-                item {
-                    Text("Settlements", style = MaterialTheme.typography.titleMedium)
-                }
-                items(uiState.settlements) { settlement ->
+                HorizontalDivider()
+                Text("Settlements", style = MaterialTheme.typography.titleMedium)
+                uiState.settlements.forEach { settlement ->
                     val fromPerson = uiState.people.find { it.id == settlement.fromPersonId }
                     val toPerson = uiState.people.find { it.id == settlement.toPersonId }
-
                     if (fromPerson != null && toPerson != null) {
                         SettlementCard(fromPerson.name, toPerson.name, settlement.amount)
                     }
                 }
             }
 
-            // Error Message
             uiState.errorMessages?.let { error ->
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-                    ) {
-                        Text(
-                            error,
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                ) {
+                    Text(
+                        error,
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 
-            // Reset Button
             if (uiState.people.isNotEmpty() || uiState.expenses.isNotEmpty()) {
-                item {
-                    Button(
-                        onClick = { viewModel.reset() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Reset All")
-                    }
+                Button(
+                    onClick = { viewModel.reset() },
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Reset All")
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -130,12 +111,14 @@ private fun AddPersonCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) 
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Add Person", style = MaterialTheme.typography.headlineSmall)
 
-            TextField(
+            OutlinedTextField(
                 value = uiState.newPersonName,
                 onValueChange = { viewModel.updatePersonName(it) },
                 modifier = Modifier.fillMaxWidth(),
@@ -185,7 +168,6 @@ private fun PersonCard(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete")
             }
@@ -200,12 +182,14 @@ private fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState)
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Add Expense", style = MaterialTheme.typography.headlineSmall)
 
-            TextField(
+            OutlinedTextField(
                 value = uiState.expenseAmount,
                 onValueChange = { viewModel.updateExpenseAmount(it) },
                 modifier = Modifier.fillMaxWidth(),
@@ -213,7 +197,7 @@ private fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState)
                 singleLine = true
             )
 
-            TextField(
+            OutlinedTextField(
                 value = uiState.expenseDescription,
                 onValueChange = { viewModel.updateExpenseDescription(it) },
                 modifier = Modifier.fillMaxWidth(),
@@ -223,10 +207,7 @@ private fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState)
 
             Text("Who Paid?", style = MaterialTheme.typography.bodyMedium)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 uiState.people.forEach { person ->
                     RadioButtonItem(
                         text = person.name,
@@ -267,10 +248,7 @@ private fun RadioButtonItem(
 }
 
 @Composable
-private fun ExpenseCard(
-    expense: Expense,
-    people: List<Person>
-) {
+private fun ExpenseCard(expense: Expense, people: List<Person>) {
     val paidByPerson = people.find { it.id == expense.paidBy }
 
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -312,11 +290,11 @@ private fun SettlementCard(fromName: String, toName: String, amount: Double) {
                 Text("↓ owes", style = MaterialTheme.typography.bodySmall)
                 Text(toName, style = MaterialTheme.typography.bodyLarge)
             }
-
             Text("₹${((amount * 100).toInt() / 100.0)}", style = MaterialTheme.typography.headlineSmall)
         }
     }
 }
+
 fun Double.format(decimals: Int): String {
     val parts = this.toString().split(".")
     if (parts.size == 1) return "${parts[0]}.${"0".repeat(decimals)}"

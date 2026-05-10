@@ -12,7 +12,7 @@ fun main() {
     startKoin {
         modules(webModule, commonModule)
     }
-    ComposeViewport(viewportContainerId = "compose-output") {
+    ComposeViewport(document.body!!) {
         App()
     }
 }
