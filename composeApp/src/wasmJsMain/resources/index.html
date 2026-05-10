@@ -1,25 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Splitter</title>
     <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
+        body { margin: 0; background: #ffffff; }
+
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease;
         }
-        #compose-output {
-            width: 100%;
-            height: 100%;
+        #splash.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #splash-icon { font-size: 64px; }
+        #splash-title {
+            margin-top: 16px;
+            font-family: sans-serif;
+            font-size: 24px;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div id="compose-output"></div>
-    <script src="webApp.js"></script>
+<div id="splash">
+    <div id="splash-icon">💸</div>
+    <div id="splash-title">Expense Splitter</div>
+</div>
+
+<div id="compose-output"></div>
+
+<script src="webApp.js" type="application/javascript"></script>
+
+<script>
+    function hideSplash() {
+        const splash = document.getElementById('splash');
+        if (!splash || splash.classList.contains('hidden')) return;
+        splash.classList.add('hidden');
+        setTimeout(() => splash.remove(), 700);
+    }
+
+    // Watch for Compose canvas being added
+    const observer = new MutationObserver(() => {
+        const compose = document.getElementById('compose-output');
+        // Compose for Web adds a <canvas> element
+        if (compose && compose.querySelector('canvas')) {
+            observer.disconnect();
+            // Small delay so first frame is actually painted
+            setTimeout(hideSplash, 300);
+        }
+    });
+
+    observer.observe(document.getElementById('compose-output'), {
+        childList: true,
+        subtree: true   //  watch deeply, Compose nests its canvas
+    });
+
+    // Fallback — hide after 5s no matter what
+    setTimeout(hideSplash, 5000);
+</script>
 </body>
 </html>

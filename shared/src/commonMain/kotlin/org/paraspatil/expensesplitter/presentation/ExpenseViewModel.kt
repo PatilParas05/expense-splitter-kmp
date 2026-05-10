@@ -3,6 +3,7 @@ package org.paraspatil.expensesplitter.presentation
 import com.benasher44.uuid.uuid4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,10 +27,14 @@ class ExpenseViewModel (
 
     init {
         scope.launch {
+            delay(2000)
+            _uiState.value = _uiState.value.copy(isSplashScreenFinished = true)
+        }
+        scope.launch {
             combine(
-            repository.getAllPeople(),
-            repository.getAllExpenses()
-            ){ people, expenses ->
+                repository.getAllPeople(),
+                repository.getAllExpenses()
+            ) { people, expenses ->
                 Pair(people, expenses)
             }.collect { (people, expenses) ->
                 val result = calculateExpenseUseCase(people, expenses)
@@ -41,14 +46,6 @@ class ExpenseViewModel (
                 )
             }
         }
-    }
-    private fun recalculate(){
-        val state = _uiState.value
-        val result = calculateExpenseUseCase(state.people, state.expenses)
-        _uiState.value = state.copy(
-            balances = result.balances,
-            settlements = result.settlements,
-        )
     }
 
     fun addPerson(name: String) {
@@ -130,19 +127,8 @@ class ExpenseViewModel (
                 errorMessages = result.error
             )
         } catch (e: Exception) {
-            _uiState.value = currentState.copy(errorMessages = "Invalid input: \${e.message}")
+            _uiState.value = currentState.copy(errorMessages = "Invalid input: ${e.message}")
         }
-    }
-
-    fun calculateExpense() {
-        val currentState = _uiState.value
-        val result = calculateExpenseUseCase(currentState.people, currentState.expenses)
-
-        _uiState.value = currentState.copy(
-            balances = result.balances,
-            settlements = result.settlements,
-            errorMessages = result.error
-        )
     }
 
     fun removePerson(personId: String) {

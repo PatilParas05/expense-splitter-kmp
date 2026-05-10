@@ -50,6 +50,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 # UUID
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

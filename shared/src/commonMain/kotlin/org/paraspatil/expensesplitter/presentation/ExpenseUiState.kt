@@ -14,5 +14,6 @@ data class ExpenseUiState(
     val expenseDescription: String = "",
     val selectedPaidBy: String = "",
     val isLoadings: Boolean = false,
-    val errorMessages: String? = null
+    val errorMessages: String? = null,
+    val isSplashScreenFinished: Boolean = false
 )
