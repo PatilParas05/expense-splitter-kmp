@@ -18,3 +18,9 @@ data class ExpenseEntity(
     val description: String,
     val splitsJson: String = "[]"
 )
+@Entity
+data class ExpenseGroupEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val timestamp: Long =0L
+)

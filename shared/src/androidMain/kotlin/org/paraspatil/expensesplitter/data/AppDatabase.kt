@@ -5,9 +5,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import kotlinx.coroutines.flow.Flow
+import org.paraspatil.expensesplitter.domain.model.ExpenseGroup
 
 @Dao
 interface ExpenseDao {
@@ -31,6 +31,19 @@ interface ExpenseDao {
 
     @Query("DELETE FROM ExpenseEntity")
     suspend fun deleteAllExpenses()
+
+    @Query("SELECT * FROM ExpenseGroupEntity ORDER BY timestamp DESC")
+    fun getAllGroups(): Flow<List<ExpenseGroup>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGroup(group: ExpenseGroup)
+
+    @Query("UPDATE ExpenseGroupEntity SET name = :newName WHERE id = :groupId")
+    suspend fun updateGroupName(groupId: String, newName: String)
+
+    @Query("SELECT * FROM ExpenseGroupEntity WHERE id = :groupId")
+    suspend fun getGroupById(groupId: String): ExpenseGroup?
+
 }
 
 @Database(entities = [PersonEntity::class, ExpenseEntity::class], version = 2,exportSchema = false )
