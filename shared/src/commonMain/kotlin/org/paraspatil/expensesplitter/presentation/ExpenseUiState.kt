@@ -1,6 +1,7 @@
 package org.paraspatil.expensesplitter.presentation
 
 import org.paraspatil.expensesplitter.domain.model.Expense
+import org.paraspatil.expensesplitter.domain.model.ExpenseGroup
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.settlement.Settlements
 
@@ -15,5 +16,10 @@ data class ExpenseUiState(
     val selectedPaidBy: String = "",
     val isLoadings: Boolean = false,
     val errorMessages: String? = null,
-    val isSplashScreenFinished: Boolean = false
+    val isSplashScreenFinished: Boolean = false,
+    val historyGroups: List<ExpenseGroup> = emptyList(),
+    val currentGroupID: String = "default",
+    val currentGroupName: String = "Current Split",
+    val showResetDialog: Boolean = false,
+    val renameTextFieldValue: String = ""
 )
