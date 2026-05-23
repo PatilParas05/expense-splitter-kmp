@@ -56,7 +56,7 @@ class DesktopExpenseRepository (
             .map { list -> list.map { ExpenseGroup(id = it.id, name = it.name, it.timestamp) } }
 
     override suspend fun createNewGroup(id: String, name: String) =
-        dao.insertGroup(ExpenseGroup(id = id, name = name, System.currentTimeMillis()))
+        dao.insertGroup(ExpenseGroupEntity(id = id, name = name, System.currentTimeMillis()))
 
     override suspend fun updateGroupName(groupId: String, newName: String) =
         dao.updateGroupName(groupId,newName)
@@ -64,4 +64,7 @@ class DesktopExpenseRepository (
     override suspend fun switchToGroup(groupId: String) {
         activeGroupId.value = groupId
     }
+    override suspend fun getGroupById(groupId: String): ExpenseGroup? =
+        dao.getGroupById(groupId)?.let { ExpenseGroup(it.id, it.name, it.timestamp) }
+
 }

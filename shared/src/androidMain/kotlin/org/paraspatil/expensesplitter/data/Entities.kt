@@ -7,7 +7,8 @@ import androidx.room.PrimaryKey
 @Entity
 data class PersonEntity(
     @PrimaryKey val id: String,
-    val name: String
+    val name: String,
+    val groupId: String = "default"
 )
 
 @Entity
@@ -16,7 +17,8 @@ data class ExpenseEntity(
     val amount: Double,
     val paidBy: String,
     val description: String,
-    val splitsJson: String = "[]"
+    val splitsJson: String = "[]",
+    val groupId: String = "default"
 )
 @Entity
 data class ExpenseGroupEntity(

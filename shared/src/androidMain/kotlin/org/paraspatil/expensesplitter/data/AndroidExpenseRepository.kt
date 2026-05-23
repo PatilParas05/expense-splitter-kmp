@@ -64,4 +64,7 @@ class AndroidExpenseRepository (
     override suspend fun switchToGroup(groupId: String) {
      activeGroupId.value = groupId
     }
+    override suspend fun getGroupById(groupId: String): ExpenseGroup? =
+        dao.getGroupById(groupId)?.let { ExpenseGroup(it.id, it.name, it.timestamp) }
+
 }

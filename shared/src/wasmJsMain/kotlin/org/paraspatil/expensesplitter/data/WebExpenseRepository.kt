@@ -2,33 +2,64 @@ package org.paraspatil.expensesplitter.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import org.paraspatil.expensesplitter.domain.model.Expense
+import org.paraspatil.expensesplitter.domain.model.ExpenseGroup
 import org.paraspatil.expensesplitter.domain.model.Person
 import kotlin.collections.emptyList
 
 class WebExpenseRepository : ExpenseRepository {
-    private val peopleFlow = MutableStateFlow<List<Person>>(emptyList())
-    private val expensesFlow = MutableStateFlow<List<Expense>>(emptyList())
+    private val groups = MutableStateFlow(listOf(ExpenseGroup("default", "Main Split")))
+    private val activeGroupId = MutableStateFlow("default")
 
-    override fun getAllPeople(): Flow<List<Person>> = peopleFlow
-    override fun getAllExpenses(): Flow<List<Expense>> = expensesFlow
+    private val peopleMap = MutableStateFlow(mapOf<String, List<Person>>("default" to emptyList()))
+    private val expensesMap = MutableStateFlow(mapOf<String, List<Expense>>("default" to emptyList()))
+
+    override fun getAllPeople(): Flow<List<Person>> = activeGroupId.map { peopleMap.value[it] ?: emptyList() }
+    override fun getAllExpenses(): Flow<List<Expense>> = activeGroupId.map { expensesMap.value[it] ?: emptyList() }
 
     override suspend fun insertPerson(person: Person) {
-        val updated = peopleFlow.value + person
-        peopleFlow.value = updated
+        val current = peopleMap.value.toMutableMap()
+        val list = (current[activeGroupId.value] ?: emptyList()) + person
+        current[activeGroupId.value] = list
+        peopleMap.value = current
     }
 
     override suspend fun insertExpense(expense: Expense) {
-        val updated = expensesFlow.value + expense
-        expensesFlow.value = updated
+        val current = expensesMap.value.toMutableMap()
+        val list = (current[activeGroupId.value] ?: emptyList()) + expense
+        current[activeGroupId.value] = list
+        expensesMap.value = current
     }
 
     override suspend fun deletePerson(id: String) {
-    peopleFlow.value = peopleFlow.value.filter { it.id != id }
+        val current = peopleMap.value.toMutableMap()
+        current[activeGroupId.value] = current[activeGroupId.value]?.filter { it.id != id } ?: emptyList()
+        peopleMap.value = current
     }
 
     override suspend fun reset() {
-        peopleFlow.value = emptyList()
-        expensesFlow.value = emptyList()
+        val p = peopleMap.value.toMutableMap()
+        val e = expensesMap.value.toMutableMap()
+        p[activeGroupId.value] = emptyList()
+        e[activeGroupId.value] = emptyList()
+        peopleMap.value = p
+        expensesMap.value = e
+    }
+
+    override fun getAllGroups(): Flow<List<ExpenseGroup>> = groups
+
+    override suspend fun getGroupById(groupId: String) = groups.value.find { it.id == groupId }
+
+    override suspend fun createNewGroup(groupId: String, name: String) {
+        groups.value = groups.value + ExpenseGroup(groupId, name)
+    }
+
+    override suspend fun updateGroupName(groupId: String, name: String) {
+        groups.value = groups.value.map { if (it.id == groupId) it.copy(name = name) else it }
+    }
+
+    override suspend fun switchToGroup(groupId: String) {
+        activeGroupId.value = groupId
     }
 }

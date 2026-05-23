@@ -5,12 +5,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import kotlinx.coroutines.launch
 import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
 import org.paraspatil.expensesplitter.presentation.ExpenseUiState
 import org.paraspatil.expensesplitter.domain.model.Person
@@ -20,89 +23,155 @@ import org.paraspatil.expensesplitter.domain.model.Expense
 @Composable
 fun ExpenseScreen(viewModel: ExpenseViewModel) {
     val uiState by viewModel.uiState.collectAsState()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text("History", modifier = Modifier.padding(16.dp))
+                HorizontalDivider()
 
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 4.dp
-        ) {
-            Text(
-                text = "Expense Splitter",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
+                uiState.historyGroups.forEach { group ->
+                    NavigationDrawerItem(
+                        label = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(group.name, modifier = Modifier.weight(1f))
+                                IconButton(onClick = { /*TODO*/ }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Rename")
+                                }
+                            }
+                        },
+                        selected = uiState.currentGroupID == group.id,
+                        onClick = {
+                            viewModel.loadGroup(group.id)
+                            scope.launch { drawerState.close() }
+
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Button(
+                    onClick = { viewModel.createNewGroup() },
+                    modifier = Modifier.padding(16.dp).fillMaxWidth()
+                ) {
+                    Text("New Split Session")
+                }
+            }
         }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-                .defaultMinSize(minHeight = 800.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            AddPersonCard(viewModel, uiState)
-
-            if (uiState.people.isNotEmpty()) {
-                Text("People (${uiState.people.size})", style = MaterialTheme.typography.titleMedium)
-                uiState.people.forEach { person ->
-                    PersonCard(person, uiState.balances, onDelete = { viewModel.removePerson(person.id) })
+    ) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text(uiState.currentGroupName) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    }
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                AddPersonCard(viewModel, uiState)
+                if (uiState.people.isNotEmpty()) {
+                    Text(
+                        "People (${uiState.people.size})",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    uiState.people.forEach { person ->
+                        PersonCard(
+                            person,
+                            uiState.balances,
+                            onDelete = { viewModel.removePerson(person.id) })
+                    }
                 }
-            }
-
-            if (uiState.people.isNotEmpty()) {
-                HorizontalDivider()
-                AddExpenseCard(viewModel, uiState)
-            }
-
-            if (uiState.expenses.isNotEmpty()) {
-                Text("Expenses (${uiState.expenses.size})", style = MaterialTheme.typography.titleMedium)
-                uiState.expenses.forEach { expense ->
-                    ExpenseCard(expense, uiState.people)
+                if (uiState.people.isNotEmpty()) {
+                    HorizontalDivider()
+                    AddExpenseCard(viewModel, uiState)
                 }
-            }
-
-            if (uiState.settlements.isNotEmpty()) {
-                HorizontalDivider()
-                Text("Settlements", style = MaterialTheme.typography.titleMedium)
-                uiState.settlements.forEach { settlement ->
-                    val fromPerson = uiState.people.find { it.id == settlement.fromPersonId }
-                    val toPerson = uiState.people.find { it.id == settlement.toPersonId }
-                    if (fromPerson != null && toPerson != null) {
-                        SettlementCard(fromPerson.name, toPerson.name, settlement.amount)
+                if (uiState.expenses.isNotEmpty()) {
+                    Text(
+                        "Expenses (${uiState.expenses.size})",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    uiState.expenses.forEach { expense ->
+                        ExpenseCard(expense, uiState.people)
+                    }
+                    if (uiState.settlements.isNotEmpty()) {
+                        HorizontalDivider()
+                        Text("Settlements", style = MaterialTheme.typography.titleMedium)
+                        uiState.settlements.forEach { settlement ->
+                            val fromPerson =
+                                uiState.people.find { it.id == settlement.fromPersonId }
+                            val toPerson = uiState.people.find { it.id == settlement.toPersonId }
+                            if (fromPerson != null && toPerson != null) {
+                                SettlementCard(fromPerson.name, toPerson.name, settlement.amount)
+                            }
+                        }
+                    }
+                    uiState.errorMessages?.let { error ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                        ) {
+                            Text(
+                                error,
+                                modifier = Modifier.padding(16.dp),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                    if (uiState.people.isNotEmpty() || uiState.expenses.isNotEmpty()) {
+                        Button(
+                            onClick = { viewModel.reset() },
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Reset All")
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
+            if (uiState.showResetDialog) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.dismissRenameDialog() },
+                    title = { Text("Rename Session")},
+                    text = {
+                        OutlinedTextField(
+                            value = uiState.renameTextFieldValue,
+                            onValueChange = { viewModel.updateRenameTextFieldValue(it) },
+                            label = { Text("Session Name") },
+                        )
+                    },
+                    confirmButton = {
+                        Button(onClick = {viewModel.confirmRename()}){
+                            Text("Save")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.dismissRenameDialog() }) {
+                            Text("Cancel")
+                        }
+                    }
 
-            uiState.errorMessages?.let { error ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-                ) {
-                    Text(
-                        error,
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
+                )
             }
-
-            if (uiState.people.isNotEmpty() || uiState.expenses.isNotEmpty()) {
-                Button(
-                    onClick = { viewModel.reset() },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Reset All")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
+
+
 
 @Composable
 private fun AddPersonCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {

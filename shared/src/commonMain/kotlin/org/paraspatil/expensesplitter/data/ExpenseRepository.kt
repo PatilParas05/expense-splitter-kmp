@@ -17,4 +17,5 @@ interface ExpenseRepository {
     suspend fun createNewGroup(id: String, name: String)
     suspend fun updateGroupName(groupId: String, newName: String)
     suspend fun switchToGroup(groupId: String)
+    suspend fun getGroupById(groupId: String): ExpenseGroup?
 }

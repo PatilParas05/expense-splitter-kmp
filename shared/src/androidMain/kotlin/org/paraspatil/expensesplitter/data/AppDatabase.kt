@@ -33,20 +33,20 @@ interface ExpenseDao {
     suspend fun deleteAllExpenses()
 
     @Query("SELECT * FROM ExpenseGroupEntity ORDER BY timestamp DESC")
-    fun getAllGroups(): Flow<List<ExpenseGroup>>
+    fun getAllGroups(): Flow<List<ExpenseGroupEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertGroup(group: ExpenseGroup)
+    suspend fun insertGroup(group: ExpenseGroupEntity)
 
     @Query("UPDATE ExpenseGroupEntity SET name = :newName WHERE id = :groupId")
     suspend fun updateGroupName(groupId: String, newName: String)
 
     @Query("SELECT * FROM ExpenseGroupEntity WHERE id = :groupId")
-    suspend fun getGroupById(groupId: String): ExpenseGroup?
+    suspend fun getGroupById(groupId: String): ExpenseGroupEntity?
 
 }
 
-@Database(entities = [PersonEntity::class, ExpenseEntity::class], version = 2,exportSchema = false )
+@Database(entities = [PersonEntity::class, ExpenseEntity::class, ExpenseGroupEntity::class], version = 2,exportSchema = false )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao

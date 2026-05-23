@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.paraspatil.expensesplitter.data.ExpenseRepository
 import org.paraspatil.expensesplitter.domain.model.Expense
@@ -30,6 +31,7 @@ class ExpenseViewModel (
             delay(2000)
             _uiState.value = _uiState.value.copy(isSplashScreenFinished = true)
         }
+        loadHistory()
         scope.launch {
             combine(
                 repository.getAllPeople(),
@@ -45,6 +47,24 @@ class ExpenseViewModel (
                     settlements = result.settlements
                 )
             }
+        }
+    }
+    private fun loadHistory(){
+        scope.launch {
+            repository.getAllGroups().collect{ groups ->
+                _uiState.update { it.copy(historyGroups = groups) }
+            }
+        }
+    }
+    fun loadGroup(groupId: String){
+        scope.launch {
+            val group = repository.getGroupById(groupId)
+            _uiState.update { it.copy(
+                currentGroupID = groupId,
+                currentGroupName = group?.name ?: "Unknown",
+            )
+            }
+            repository.switchToGroup(groupId)
         }
     }
 
@@ -157,5 +177,40 @@ class ExpenseViewModel (
             repository.reset()
         }
         _uiState.value = ExpenseUiState()
+    }
+
+    fun updateRenameTextFieldValue(value: String) {
+        _uiState.update { it.copy(renameTextFieldValue = value) }
+    }
+    fun confirmRename() {
+        val newName = _uiState.value.renameTextFieldValue
+        val groupId = _uiState.value.currentGroupID
+
+        if (newName.isBlank()) return
+
+        scope.launch {
+            repository.updateGroupName(groupId, newName)
+            _uiState.update { it.copy(
+                currentGroupName = newName,
+                showResetDialog = false
+            ) }
+            loadHistory()
+        }
+    }
+    fun createNewGroup() {
+        scope.launch {
+            val newId = uuid4().toString()
+            repository.createNewGroup(newId,"New Group")
+            loadGroup(newId)
+        }
+    }
+    fun showRenameDialog(currentName: String)  {
+        _uiState.update { it.copy(
+        showResetDialog = true,
+            renameTextFieldValue = currentName
+        )}
+    }
+    fun dismissRenameDialog() {
+        _uiState.update { it.copy(showResetDialog = false) }
     }
 }
