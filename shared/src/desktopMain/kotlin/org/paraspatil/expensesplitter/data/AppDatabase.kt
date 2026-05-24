@@ -14,14 +14,14 @@ interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPerson(person: PersonEntity)
 
-    @Query("SELECT * FROM PersonEntity")
-    fun getAllPeople(): Flow<List<PersonEntity>>
+    @Query("SELECT * FROM PersonEntity WHERE groupId = :groupId")
+    fun getPeopleByGroup(groupId: String): Flow<List<PersonEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExpense(expense: ExpenseEntity)
 
-    @Query("SELECT * FROM ExpenseEntity")
-    fun getAllExpenses(): Flow<List<ExpenseEntity>>
+    @Query("SELECT * FROM ExpenseEntity WHERE groupId = :groupId")
+    fun getExpensesByGroup(groupId: String): Flow<List<ExpenseEntity>>
 
     @Query("DELETE FROM PersonEntity WHERE id = :id")
     suspend fun deletePerson(id: String)
@@ -47,7 +47,7 @@ interface ExpenseDao {
 
 }
 
-@Database(entities = [PersonEntity::class, ExpenseEntity::class, ExpenseGroupEntity::class], version = 2,exportSchema = false )
+@Database(entities = [PersonEntity::class, ExpenseEntity::class, ExpenseGroupEntity::class], version = 3,exportSchema = false )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao

@@ -38,7 +38,7 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(group.name, modifier = Modifier.weight(1f))
-                                IconButton(onClick = { /*TODO*/ }) {
+                                IconButton(onClick = { viewModel.showRenameDialog(group.name) }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Rename")
                                 }
                             }
