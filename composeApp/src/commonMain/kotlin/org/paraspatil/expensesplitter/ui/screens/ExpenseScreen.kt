@@ -30,7 +30,7 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text("History", modifier = Modifier.padding(16.dp))
+                Text("History", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
                 HorizontalDivider()
 
                 uiState.historyGroups.forEach { group ->

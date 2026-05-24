@@ -26,13 +26,17 @@ interface ExpenseDao {
     @Query("DELETE FROM PersonEntity WHERE id = :id")
     suspend fun deletePerson(id: String)
 
+    @Query("DELETE FROM PersonEntity WHERE groupId = :groupId")
+    suspend fun deletePeopleByGroup(groupId: String)
+
+    @Query("DELETE FROM ExpenseEntity WHERE groupId = :groupId")
+    suspend fun deleteExpensesByGroup(groupId: String)
+
     @Query("DELETE FROM PersonEntity")
     suspend fun deleteAllPeople()
 
     @Query("DELETE FROM ExpenseEntity")
     suspend fun deleteAllExpenses()
-
-
     @Query("SELECT * FROM ExpenseGroupEntity ORDER BY timestamp DESC")
     fun getAllGroups(): Flow<List<ExpenseGroupEntity>>
 

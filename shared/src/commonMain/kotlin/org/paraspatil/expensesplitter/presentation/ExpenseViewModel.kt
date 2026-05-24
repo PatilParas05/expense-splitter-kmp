@@ -33,6 +33,16 @@ class ExpenseViewModel (
         }
         loadHistory()
         scope.launch {
+            repository.getAllGroups().collect { groups ->
+                if (groups.isEmpty()) {
+                    val newId = uuid4().toString()
+                    repository.createNewGroup(newId,"Current Split")
+                    loadGroup(newId)
+                }
+                _uiState.update { it.copy(historyGroups = groups) }
+            }
+        }
+        scope.launch {
             combine(
                 repository.getAllPeople(),
                 repository.getAllExpenses()
@@ -40,12 +50,14 @@ class ExpenseViewModel (
                 Pair(people, expenses)
             }.collect { (people, expenses) ->
                 val result = calculateExpenseUseCase(people, expenses)
-                _uiState.value = _uiState.value.copy(
-                    people = people,
-                    expenses = expenses,
-                    balances = result.balances,
-                    settlements = result.settlements
-                )
+                _uiState.update {
+                    it.copy(
+                        people = people,
+                        expenses = expenses,
+                        balances = result.balances,
+                        settlements = result.settlements
+                    )
+                }
             }
         }
     }
@@ -176,7 +188,6 @@ class ExpenseViewModel (
         scope.launch {
             repository.reset()
         }
-        _uiState.value = ExpenseUiState()
     }
 
     fun updateRenameTextFieldValue(value: String) {

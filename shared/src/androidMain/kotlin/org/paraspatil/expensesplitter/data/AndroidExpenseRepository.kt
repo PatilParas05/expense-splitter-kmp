@@ -53,8 +53,8 @@ class AndroidExpenseRepository (
     override suspend fun deletePerson(id: String) = dao.deletePerson(id)
 
     override suspend fun reset() {
-        dao.deleteAllPeople()
-        dao.deleteAllExpenses()
+        dao.deletePeopleByGroup(activeGroupId.value)
+        dao.deleteExpensesByGroup(activeGroupId.value)
     }
 
     override fun getAllGroups(): Flow<List<ExpenseGroup>> =
