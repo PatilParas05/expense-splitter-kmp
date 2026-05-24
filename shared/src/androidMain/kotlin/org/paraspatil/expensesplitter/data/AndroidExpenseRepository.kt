@@ -50,7 +50,10 @@ class AndroidExpenseRepository (
             )
         )
 
-    override suspend fun deletePerson(id: String) = dao.deletePerson(id)
+    override suspend fun deletePerson(id: String) {
+        dao.deletePerson(id)
+        dao.deleteExpensesByPerson(id)
+    }
 
     override suspend fun reset() {
         dao.deletePeopleByGroup(activeGroupId.value)

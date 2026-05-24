@@ -33,9 +33,12 @@ class WebExpenseRepository : ExpenseRepository {
     }
 
     override suspend fun deletePerson(id: String) {
-        val current = peopleMap.value.toMutableMap()
-        current[activeGroupId.value] = current[activeGroupId.value]?.filter { it.id != id } ?: emptyList()
-        peopleMap.value = current
+        val currentPeople = peopleMap.value.toMutableMap()
+        val currentExpenses = expensesMap.value.toMutableMap()
+        currentPeople[activeGroupId.value] = currentPeople[activeGroupId.value]?.filter { it.id != id } ?: emptyList()
+        currentExpenses[activeGroupId.value] = currentExpenses[activeGroupId.value]?.filter { it.paidBy != id } ?: emptyList()
+        peopleMap.value = currentPeople
+        expensesMap.value = currentExpenses
     }
 
     override suspend fun reset() {

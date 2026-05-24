@@ -26,6 +26,9 @@ interface ExpenseDao {
     @Query("DELETE FROM PersonEntity WHERE id = :id")
     suspend fun deletePerson(id: String)
 
+    @Query("DELETE FROM ExpenseEntity WHERE paidBy = :personId")
+    suspend fun deleteExpensesByPerson(personId: String)
+
     @Query("DELETE FROM PersonEntity WHERE groupId = :groupId")
     suspend fun deletePeopleByGroup(groupId: String)
 
