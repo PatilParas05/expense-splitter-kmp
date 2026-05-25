@@ -65,4 +65,16 @@ class WebExpenseRepository : ExpenseRepository {
     override suspend fun switchToGroup(groupId: String) {
         activeGroupId.value = groupId
     }
+
+    override suspend fun deleteGroup(groupId: String) {
+        groups.value = groups.value.filter { it.id != groupId }
+
+        val pMap = peopleMap.value.toMutableMap()
+        val eMap = expensesMap.value.toMutableMap()
+        pMap.remove(groupId)
+        eMap.remove(groupId)
+
+        peopleMap.value = pMap
+        expensesMap.value = eMap
+    }
 }

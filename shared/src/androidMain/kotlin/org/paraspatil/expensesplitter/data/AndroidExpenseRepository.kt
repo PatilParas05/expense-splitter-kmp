@@ -76,4 +76,10 @@ class AndroidExpenseRepository (
     override suspend fun getGroupById(groupId: String): ExpenseGroup? =
         dao.getGroupById(groupId)?.let { ExpenseGroup(it.id, it.name, it.timestamp) }
 
+    override suspend fun deleteGroup(groupId: String) {
+        dao.deleteGroup(groupId)
+        dao.deletePeopleByGroup(groupId)
+        dao.deleteExpensesByGroup(groupId)
+    }
+
 }

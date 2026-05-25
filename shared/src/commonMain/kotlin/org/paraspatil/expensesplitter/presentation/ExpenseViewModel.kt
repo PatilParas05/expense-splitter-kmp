@@ -79,6 +79,21 @@ class ExpenseViewModel (
             repository.switchToGroup(groupId)
         }
     }
+    fun deleteGroup(groupId: String) {
+        scope.launch {
+            repository.deleteGroup(groupId)
+
+            if (_uiState.value.currentGroupID == groupId) {
+             val remainingGroups = _uiState.value.historyGroups.filter { it.id != groupId }
+             if (remainingGroups.isNotEmpty()){
+                 loadGroup(remainingGroups.first().id)
+             } else {
+                 createNewGroup()
+                }
+            }
+            loadHistory()
+        }
+    }
 
     fun addPerson(name: String) {
         if (name.isBlank()) return

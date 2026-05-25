@@ -14,14 +14,26 @@ interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPerson(person: PersonEntity)
 
-    @Query("SELECT * FROM PersonEntity WHERE groupId = :groupId")
-    fun getPeopleByGroup(groupId: String): Flow<List<PersonEntity>>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGroup(group: ExpenseGroupEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExpense(expense: ExpenseEntity)
 
+    @Query("SELECT * FROM PersonEntity WHERE groupId = :groupId")
+    fun getPeopleByGroup(groupId: String): Flow<List<PersonEntity>>
+
     @Query("SELECT * FROM ExpenseEntity WHERE groupId = :groupId")
     fun getExpensesByGroup(groupId: String): Flow<List<ExpenseEntity>>
+
+    @Query("SELECT * FROM ExpenseGroupEntity ORDER BY timestamp DESC")
+    fun getAllGroups(): Flow<List<ExpenseGroupEntity>>
+
+    @Query("SELECT * FROM ExpenseGroupEntity WHERE id = :groupId")
+    suspend fun getGroupById(groupId: String): ExpenseGroupEntity?
+
+    @Query("UPDATE ExpenseGroupEntity SET name = :newName WHERE id = :groupId")
+    suspend fun updateGroupName(groupId: String, newName: String)
 
     @Query("DELETE FROM PersonEntity WHERE id = :id")
     suspend fun deletePerson(id: String)
@@ -41,18 +53,8 @@ interface ExpenseDao {
     @Query("DELETE FROM ExpenseEntity")
     suspend fun deleteAllExpenses()
 
-    @Query("SELECT * FROM ExpenseGroupEntity ORDER BY timestamp DESC")
-    fun getAllGroups(): Flow<List<ExpenseGroupEntity>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertGroup(group: ExpenseGroupEntity)
-
-    @Query("UPDATE ExpenseGroupEntity SET name = :newName WHERE id = :groupId")
-    suspend fun updateGroupName(groupId: String, newName: String)
-
-    @Query("SELECT * FROM ExpenseGroupEntity WHERE id = :groupId")
-    suspend fun getGroupById(groupId: String): ExpenseGroupEntity?
-
+    @Query("DELETE FROM ExpenseGroupEntity WHERE id = :groupId")
+    suspend fun deleteGroup(groupId: String)
 }
 
 @Database(entities = [PersonEntity::class, ExpenseEntity::class, ExpenseGroupEntity::class], version = 3,exportSchema = false )

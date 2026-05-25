@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,12 +35,51 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
                 HorizontalDivider()
 
                 uiState.historyGroups.forEach { group ->
+                    var showMenu by remember { mutableStateOf(false) }
                     NavigationDrawerItem(
                         label = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(group.name, modifier = Modifier.weight(1f))
-                                IconButton(onClick = { viewModel.showRenameDialog(group.name) }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Rename")
+                                Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+                                    IconButton(onClick = { showMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "Options"
+                                        )
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = showMenu,
+                                        onDismissRequest = { showMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Rename") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Edit,
+                                                    contentDescription = "Rename"
+                                                )
+                                            },
+                                            onClick = {
+                                                showMenu = false
+                                                viewModel.showRenameDialog(group.name)
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Delete") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    null,
+                                                    tint = MaterialTheme.colorScheme.error
+                                                )
+                                            },
+                                            onClick = {
+                                                showMenu = false
+                                                viewModel.deleteGroup(group.id)
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         },
