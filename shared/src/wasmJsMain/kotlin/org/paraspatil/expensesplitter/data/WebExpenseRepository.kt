@@ -9,7 +9,7 @@ import org.paraspatil.expensesplitter.domain.model.Person
 import kotlin.collections.emptyList
 
 class WebExpenseRepository : ExpenseRepository {
-    private val groups = MutableStateFlow(listOf(ExpenseGroup("default", "Main Split")))
+    private val groups = MutableStateFlow(listOf(ExpenseGroup("default", "Current Split")))
     private val activeGroupId = MutableStateFlow("default")
 
     private val peopleMap = MutableStateFlow(mapOf<String, List<Person>>("default" to emptyList()))

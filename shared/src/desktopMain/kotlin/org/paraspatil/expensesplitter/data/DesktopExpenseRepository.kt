@@ -55,8 +55,8 @@ class DesktopExpenseRepository (
     }
 
     override suspend fun reset() {
-        dao.deleteAllPeople()
-        dao.deleteAllExpenses()
+        dao.deletePeopleByGroup(activeGroupId.value)
+        dao.deleteExpensesByGroup(activeGroupId.value)
     }
     override fun getAllGroups(): Flow<List<ExpenseGroup>> =
         dao.getAllGroups()
