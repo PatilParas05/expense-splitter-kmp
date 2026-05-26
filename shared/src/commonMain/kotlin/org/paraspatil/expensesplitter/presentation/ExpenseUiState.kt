@@ -4,6 +4,7 @@ import org.paraspatil.expensesplitter.domain.model.Expense
 import org.paraspatil.expensesplitter.domain.model.ExpenseGroup
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.settlement.Settlements
+import org.paraspatil.expensesplitter.domain.split.SplitType
 
 data class ExpenseUiState(
     val people: List<Person> = emptyList(),
@@ -21,5 +22,7 @@ data class ExpenseUiState(
     val currentGroupID: String = "default",
     val currentGroupName: String = "Current Split",
     val showResetDialog: Boolean = false,
-    val renameTextFieldValue: String = ""
+    val renameTextFieldValue: String = "",
+    val splitType: String = "EQUAL",
+    val splitValues: Map<String, String> = emptyMap()
 )
