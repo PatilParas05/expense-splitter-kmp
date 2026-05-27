@@ -14,9 +14,13 @@ import org.paraspatil.expensesplitter.data.ExpenseRepository
 import org.paraspatil.expensesplitter.domain.model.Expense
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.split.EqualSplitCalculator
+import org.paraspatil.expensesplitter.domain.split.ExactSplitCalculator
+import org.paraspatil.expensesplitter.domain.split.PercentageSplitCalculator
+import org.paraspatil.expensesplitter.domain.split.SharesSplitCalculator
+import org.paraspatil.expensesplitter.domain.split.SplitCalculator
 import org.paraspatil.expensesplitter.domain.usecase.CalculateExpenseUseCase
 
-class ExpenseViewModel (
+class ExpenseViewModel(
     private val repository: ExpenseRepository
 ) {
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -24,7 +28,6 @@ class ExpenseViewModel (
     val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
     private val calculateExpenseUseCase = CalculateExpenseUseCase()
-    private val splitCalculator = EqualSplitCalculator()
 
     init {
         scope.launch {
@@ -36,7 +39,7 @@ class ExpenseViewModel (
             repository.getAllGroups().collect { groups ->
                 if (groups.isEmpty()) {
                     val newId = uuid4().toString()
-                    repository.createNewGroup(newId,"Current Split")
+                    repository.createNewGroup(newId, "Current Split")
                     loadGroup(newId)
                 }
                 _uiState.update { it.copy(historyGroups = groups) }
@@ -61,34 +64,36 @@ class ExpenseViewModel (
             }
         }
     }
-    private fun loadHistory(){
+    private fun loadHistory() {
         scope.launch {
-            repository.getAllGroups().collect{ groups ->
+            repository.getAllGroups().collect { groups ->
                 _uiState.update { it.copy(historyGroups = groups) }
             }
         }
     }
-    fun loadGroup(groupId: String){
+    fun loadGroup(groupId: String) {
         scope.launch {
             val group = repository.getGroupById(groupId)
-            _uiState.update { it.copy(
-                currentGroupID = groupId,
-                currentGroupName = group?.name ?: "Unknown",
-            )
+            _uiState.update {
+                it.copy(
+                    currentGroupID = groupId,
+                    currentGroupName = group?.name ?: "Unknown",
+                )
             }
             repository.switchToGroup(groupId)
         }
     }
+
     fun deleteGroup(groupId: String) {
         scope.launch {
             repository.deleteGroup(groupId)
 
             if (_uiState.value.currentGroupID == groupId) {
-             val remainingGroups = _uiState.value.historyGroups.filter { it.id != groupId }
-             if (remainingGroups.isNotEmpty()){
-                 loadGroup(remainingGroups.first().id)
-             } else {
-                 createNewGroup()
+                val remainingGroups = _uiState.value.historyGroups.filter { it.id != groupId }
+                if (remainingGroups.isNotEmpty()) {
+                    loadGroup(remainingGroups.first().id)
+                } else {
+                    createNewGroup()
                 }
             }
             loadHistory()
@@ -128,6 +133,23 @@ class ExpenseViewModel (
         _uiState.value = _uiState.value.copy(selectedPaidBy = personId)
     }
 
+    fun updateSplitType(type: String) {
+        _uiState.value = _uiState.value.copy(
+            splitType = type,
+            splitValues = emptyMap()
+        )
+    }
+
+    fun updateSplitValue(personId: String, value: String) {
+        val currentValues = _uiState.value.splitValues.toMutableMap()
+        if (value.isBlank()) {
+            currentValues.remove(personId)
+        } else {
+            currentValues[personId] = value
+        }
+        _uiState.value = _uiState.value.copy(splitValues = currentValues)
+    }
+
     fun addExpense() {
         val currentState = _uiState.value
 
@@ -143,9 +165,42 @@ class ExpenseViewModel (
                 return
             }
 
+
+            val splitCalculator: SplitCalculator = when (currentState.splitType) {
+                "EQUAL" -> EqualSplitCalculator()
+                "EXACT" -> ExactSplitCalculator()
+                "PERCENTAGE" -> {
+                    // Validate percentage sum
+                    val percentages = currentState.splitValues.mapValues { it.value.toDoubleOrNull() ?: 0.0 }
+                    val total = percentages.values.sum()
+                    if (total !in 99.9..100.1) {
+                        _uiState.value = currentState.copy(errorMessages = "Percentages must sum to 100% (Current: $total%)")
+                        return
+                    }
+                    PercentageSplitCalculator()
+                }
+                "SHARES" -> SharesSplitCalculator()
+                else -> EqualSplitCalculator()
+            }
+
+            // Parse split values
+            val params = if (currentState.splitType == "EQUAL") {
+                emptyMap()
+            } else {
+                currentState.splitValues.mapNotNull { (personId, value) ->
+                    val amount = value.toDoubleOrNull()
+                    if (amount != null && amount > 0) {
+                        personId to amount
+                    } else {
+                        null
+                    }
+                }.toMap()
+            }
+
             val splits = splitCalculator.calculateSplits(
                 amount = amount,
                 personIds = currentState.people.map { it.id },
+                params = params
             )
 
             val expense = Expense(
@@ -154,6 +209,7 @@ class ExpenseViewModel (
                 splits = splits,
                 description = currentState.expenseDescription
             )
+
             scope.launch {
                 repository.insertExpense(expense)
             }
@@ -171,6 +227,8 @@ class ExpenseViewModel (
                 settlements = result.settlements,
                 expenseAmount = "",
                 expenseDescription = "",
+                splitValues = emptyMap(),
+                splitType = "EQUAL",
                 errorMessages = result.error
             )
         } catch (e: Exception) {
@@ -184,10 +242,11 @@ class ExpenseViewModel (
         val updatedExpenses = currentState.expenses.filter { expense ->
             expense.paidBy != personId && expense.splits.none { it.personId == personId }
         }
+
         scope.launch {
             repository.deletePerson(personId)
         }
-        
+
         val result = calculateExpenseUseCase(updatedPeople, updatedExpenses)
 
         _uiState.value = currentState.copy(
@@ -208,6 +267,7 @@ class ExpenseViewModel (
     fun updateRenameTextFieldValue(value: String) {
         _uiState.update { it.copy(renameTextFieldValue = value) }
     }
+
     fun confirmRename() {
         val newName = _uiState.value.renameTextFieldValue
         val groupId = _uiState.value.currentGroupID
@@ -216,26 +276,33 @@ class ExpenseViewModel (
 
         scope.launch {
             repository.updateGroupName(groupId, newName)
-            _uiState.update { it.copy(
-                currentGroupName = newName,
-                showResetDialog = false
-            ) }
+            _uiState.update {
+                it.copy(
+                    currentGroupName = newName,
+                    showResetDialog = false
+                )
+            }
             loadHistory()
         }
     }
+
     fun createNewGroup() {
         scope.launch {
             val newId = uuid4().toString()
-            repository.createNewGroup(newId,"New Group")
+            repository.createNewGroup(newId, "New Group")
             loadGroup(newId)
         }
     }
-    fun showRenameDialog(currentName: String)  {
-        _uiState.update { it.copy(
-        showResetDialog = true,
-            renameTextFieldValue = currentName
-        )}
+
+    fun showRenameDialog(currentName: String) {
+        _uiState.update {
+            it.copy(
+                showResetDialog = true,
+                renameTextFieldValue = currentName
+            )
+        }
     }
+
     fun dismissRenameDialog() {
         _uiState.update { it.copy(showResetDialog = false) }
     }
