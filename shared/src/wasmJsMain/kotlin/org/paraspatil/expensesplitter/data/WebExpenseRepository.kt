@@ -15,8 +15,11 @@ class WebExpenseRepository : ExpenseRepository {
     private val peopleMap = MutableStateFlow(mapOf<String, List<Person>>("default" to emptyList()))
     private val expensesMap = MutableStateFlow(mapOf<String, List<Expense>>("default" to emptyList()))
 
-    override fun getAllPeople(): Flow<List<Person>> = activeGroupId.map { peopleMap.value[it] ?: emptyList() }
-    override fun getAllExpenses(): Flow<List<Expense>> = activeGroupId.map { expensesMap.value[it] ?: emptyList() }
+    override fun getAllPeople(): Flow<List<Person>> =
+        activeGroupId.map { peopleMap.value[it] ?: emptyList() }
+
+    override fun getAllExpenses(): Flow<List<Expense>> =
+        activeGroupId.map { expensesMap.value[it] ?: emptyList() }
 
     override suspend fun insertPerson(person: Person) {
         val current = peopleMap.value.toMutableMap()
@@ -35,8 +38,13 @@ class WebExpenseRepository : ExpenseRepository {
     override suspend fun deletePerson(id: String) {
         val currentPeople = peopleMap.value.toMutableMap()
         val currentExpenses = expensesMap.value.toMutableMap()
-        currentPeople[activeGroupId.value] = currentPeople[activeGroupId.value]?.filter { it.id != id } ?: emptyList()
-        currentExpenses[activeGroupId.value] = currentExpenses[activeGroupId.value]?.filter { it.paidBy != id } ?: emptyList()
+
+        currentPeople[activeGroupId.value] =
+            currentPeople[activeGroupId.value]?.filter { it.id != id } ?: emptyList()
+
+        currentExpenses[activeGroupId.value] =
+            currentExpenses[activeGroupId.value]?.filter { it.paidBy != id } ?: emptyList()
+
         peopleMap.value = currentPeople
         expensesMap.value = currentExpenses
     }
@@ -52,14 +60,25 @@ class WebExpenseRepository : ExpenseRepository {
 
     override fun getAllGroups(): Flow<List<ExpenseGroup>> = groups
 
-    override suspend fun getGroupById(groupId: String) = groups.value.find { it.id == groupId }
+    override suspend fun getGroupById(groupId: String) =
+        groups.value.find { it.id == groupId }
 
     override suspend fun createNewGroup(groupId: String, name: String) {
         groups.value = groups.value + ExpenseGroup(groupId, name)
+
+
+        val p = peopleMap.value.toMutableMap()
+        val e = expensesMap.value.toMutableMap()
+        p[groupId] = emptyList()
+        e[groupId] = emptyList()
+        peopleMap.value = p
+        expensesMap.value = e
     }
 
     override suspend fun updateGroupName(groupId: String, name: String) {
-        groups.value = groups.value.map { if (it.id == groupId) it.copy(name = name) else it }
+        groups.value = groups.value.map {
+            if (it.id == groupId) it.copy(name = name) else it
+        }
     }
 
     override suspend fun switchToGroup(groupId: String) {
