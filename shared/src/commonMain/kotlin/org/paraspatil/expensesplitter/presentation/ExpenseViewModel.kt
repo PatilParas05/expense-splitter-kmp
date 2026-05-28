@@ -259,6 +259,21 @@ class ExpenseViewModel(
     }
 
     fun reset() {
+        val currentState = _uiState.value
+
+        _uiState.value = currentState.copy(
+            people = emptyList(),
+            expenses = emptyList(),
+            settlements = emptyList(),
+            balances = emptyMap(),
+            newPersonName = "",
+            expenseAmount = "",
+            expenseDescription = "",
+            selectedPaidBy = "",
+            errorMessages = null,
+            splitType = "EQUAL",
+            splitValues = emptyMap()
+        )
         scope.launch {
             repository.reset()
         }

@@ -50,10 +50,14 @@ class WebExpenseRepository : ExpenseRepository {
     }
 
     override suspend fun reset() {
+        val groupId = activeGroupId.value
+
         val p = peopleMap.value.toMutableMap()
         val e = expensesMap.value.toMutableMap()
-        p[activeGroupId.value] = emptyList()
-        e[activeGroupId.value] = emptyList()
+
+        p[groupId] = emptyList()
+        e[groupId] = emptyList()
+
         peopleMap.value = p
         expensesMap.value = e
     }
@@ -65,7 +69,6 @@ class WebExpenseRepository : ExpenseRepository {
 
     override suspend fun createNewGroup(groupId: String, name: String) {
         groups.value = groups.value + ExpenseGroup(groupId, name)
-
 
         val p = peopleMap.value.toMutableMap()
         val e = expensesMap.value.toMutableMap()
