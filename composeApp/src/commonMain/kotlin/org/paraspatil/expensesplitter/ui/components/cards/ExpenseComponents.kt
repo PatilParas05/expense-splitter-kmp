@@ -3,14 +3,22 @@ package org.paraspatil.expensesplitter.ui.components.cards
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +34,7 @@ import org.paraspatil.expensesplitter.ui.components.utils.format
 
 @Composable
 fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
+    var expandSplitOptions by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -58,6 +67,30 @@ fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
                     fontWeight = FontWeight.Bold
                 )
             }
+            Surface(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        "💡",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Text(
+                        "Most users split expenses equally. Change split type only if needed.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
 
             // Amount Input
             OutlinedTextField(
@@ -82,69 +115,129 @@ fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Split Type Selection
-            Text(
-                "Split Type",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold
-            )
-            Row(
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { expandSplitOptions = !expandSplitOptions },
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                listOf("EQUAL", "EXACT", "PERCENTAGE", "SHARES").forEach { type ->
-                    FilterChip(
-                        selected = uiState.splitType == type,
-                        onClick = { viewModel.updateSplitType(type) },
-                        label = {
-                            Text(
-                                type,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        },
-                        shape = RoundedCornerShape(12.dp)
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ){
+                        Text(
+                            "Split Options",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.size(29.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center){
+                                Text(
+                                    uiState.splitValues.size.toString(),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                    Icon(
+                        if (expandSplitOptions) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Expand",
+                        modifier = Modifier.size(24.dp)
                     )
                 }
-            }
 
-            // Split Values for Non-Equal Splits
+            }
             AnimatedVisibility(
-                visible = uiState.splitType != "EQUAL",
+                visible = expandSplitOptions,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(modifier = Modifier.padding(start = 12.dp)) {
                     Text(
-                        text = when (uiState.splitType) {
-                            "EXACT" -> "Enter exact amount for each person:"
-                            "PERCENTAGE" -> "Enter percentage for each person (Total 100%):"
-                            "SHARES" -> "Enter shares for each person:"
-                            else -> ""
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        "How to split this expense?",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    SplitTypeOption(
+                        name = "EQUAL",
+                        description = "Split equally among all people",
+                        icon = "=",
+                        isSelected = uiState.splitType == "EQUAL",
+                        onClick = { viewModel.updateSplitType("EQUAL") }
+                    )
+                    SplitTypeOption(
+                        name = "EXACT",
+                        description = "Specify exact amount for each person",
+                        icon = "₹",
+                        isSelected = uiState.splitType == "EXACT",
+                        onClick = { viewModel.updateSplitType("EXACT") }
+                    )
+                    SplitTypeOption(
+                        name = "PERCENTAGE",
+                        description = "Split according to percentages(must total 100%)",
+                        icon = "%",
+                        isSelected = uiState.splitType == "PERCENTAGE",
+                        onClick = { viewModel.updateSplitType("PERCENTAGE") }
+                    )
+                    SplitTypeOption(
+                        name = "SHARES",
+                        description = "Allocate shares (higher = more expense)",
+                        icon = "📊",
+                        isSelected =uiState.splitType=="SHARES",
+                        onClick = { viewModel.updateSplitType("SHARES") }
                     )
 
-                    uiState.people.forEach { person ->
-                        OutlinedTextField(
-                            value = uiState.splitValues[person.id] ?: "",
-                            onValueChange = { viewModel.updateSplitValue(person.id, it) },
-                            label = {
-                                val suffix = when (uiState.splitType) {
-                                    "EXACT" -> "₹"
-                                    "PERCENTAGE" -> "%"
-                                    "SHARES" -> "shares"
-                                    else -> ""
-                                }
-                                Text("${person.name} ($suffix)")
+                    if (uiState.splitType != "EQUAL"){
+                        Spacer(modifier = Modifier.height(8.dp))
+                        HorizontalDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = when(uiState.splitType){
+                                "EXACT" -> "Enter exact amount for each person:"
+                                "PERCENTAGE" -> "Enter percentage for each person (Total 100%):"
+                                "SHARES" -> "Allocate shares (higher number = more expense)"
+                                else -> ""
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontWeight = FontWeight.SemiBold
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        uiState.people.forEach { person ->
+                            OutlinedTextField(
+                                value = uiState.splitValues[person.id] ?: "",
+                                onValueChange = { viewModel.updateSplitValue(person.id, it) },
+                                label = {
+                                    val suffix = when (uiState.splitType) {
+                                        "EXACT" -> "₹"
+                                        "PERCENTAGE" -> "%"
+                                        "SHARES" -> "shares"
+                                        else -> ""
+                                    }
+                                    Text("${person.name} ($suffix)")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -184,6 +277,69 @@ fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
     }
 }
 
+@Composable
+private fun SplitTypeOption(
+    name: String,
+    description: String,
+    icon: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+){
+    Surface (
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable{onClick()},
+        color = if (isSelected)
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        else MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.outlineVariant
+        )
+    ){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface (
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.size(40.dp)
+            ){
+                Box(contentAlignment = Alignment.Center){
+                    Text(icon,style = MaterialTheme.typography.headlineSmall)
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    name,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (isSelected){
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
 @Composable
 fun RadioButtonItem(
     text: String,
