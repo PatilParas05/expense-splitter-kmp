@@ -147,7 +147,7 @@ fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
                         ) {
                             Box(contentAlignment = Alignment.Center){
                                 Text(
-                                    uiState.splitValues.size.toString(),
+                                    uiState.splitType.first().toString(),
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold
