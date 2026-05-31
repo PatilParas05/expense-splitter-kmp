@@ -41,8 +41,19 @@ class ExpenseViewModel(
                     val newId = uuid4().toString()
                     repository.createNewGroup(newId, "Current Split")
                     loadGroup(newId)
+                }else{
+                    if (_uiState.value.currentGroupID == "default"){
+                        val firstGroup = groups.first()
+                        _uiState.update {
+                            it.copy(
+                                currentGroupID = firstGroup.id,
+                                currentGroupName = firstGroup.name
+                            )
+                        }
+                        repository.switchToGroup(firstGroup.id)
+                    }
+                    _uiState.update { it.copy(historyGroups = groups) }
                 }
-                _uiState.update { it.copy(historyGroups = groups) }
             }
         }
         scope.launch {
@@ -284,7 +295,7 @@ class ExpenseViewModel(
     }
 
     fun confirmRename() {
-        val newName = _uiState.value.renameTextFieldValue
+        val newName = _uiState.value.renameTextFieldValue.trim()
         val groupId = _uiState.value.currentGroupID
 
         if (newName.isBlank()) return
@@ -294,10 +305,10 @@ class ExpenseViewModel(
             _uiState.update {
                 it.copy(
                     currentGroupName = newName,
-                    showResetDialog = false
+                    showResetDialog = false,
+                    renameTextFieldValue = ""
                 )
             }
-            loadHistory()
         }
     }
 
