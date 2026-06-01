@@ -4,7 +4,6 @@ import org.paraspatil.expensesplitter.domain.model.Expense
 import org.paraspatil.expensesplitter.domain.model.ExpenseGroup
 import org.paraspatil.expensesplitter.domain.model.Person
 import org.paraspatil.expensesplitter.domain.settlement.Settlements
-import org.paraspatil.expensesplitter.domain.split.SplitType
 
 data class ExpenseUiState(
     val people: List<Person> = emptyList(),

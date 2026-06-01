@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.koin.compose)
+            implementation(compose.components.uiToolingPreview)
         }
         val wasmJsMain by getting {
             dependencies {
