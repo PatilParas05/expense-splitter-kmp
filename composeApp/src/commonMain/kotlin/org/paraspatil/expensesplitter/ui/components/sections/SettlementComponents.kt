@@ -1,6 +1,7 @@
 package org.paraspatil.expensesplitter.ui.components.sections
 
-import androidx.compose.animation.*
+
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,114 +12,90 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
 import org.paraspatil.expensesplitter.presentation.ExpenseUiState
 import org.paraspatil.expensesplitter.ui.components.utils.format
 
 @Composable
+fun SettlementTab(viewModel: ExpenseViewModel,uiState: ExpenseUiState) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        SummaryBalanceCard(uiState.expenses.sumOf { it.amount })
+
+        if (uiState.settlements.isNotEmpty()) {
+            SettlementsSection(uiState)
+        } else {
+            ErrorMessageCard("No debts to settle. Everything is clear!")
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        ResetButton(viewModel)
+    }
+}
+@Composable
+private fun SummaryBalanceCard(total: Double) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(24.dp)),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+    ){
+        Box(modifier = Modifier.background(
+            Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary))
+        ).padding(24.dp)) {
+            Column {
+                Text("Total Group Spending", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelMedium)
+                Text("₹${total.format(2)}", color = Color.White, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+@Composable
 fun SettlementsSection(uiState: ExpenseUiState) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                "Settlements",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Settlements", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(8.dp))
             SuggestionChip(
                 onClick = {},
-                label = {Text("Simplified", style = MaterialTheme.typography.labelSmall)},
-                icon = {Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(16.dp))},
+                label = { Text("Simplified", style = MaterialTheme.typography.labelSmall) },
+                icon = { Icon(Icons.Default.CheckCircle, null, Modifier.size(14.dp)) }
             )
-            Surface(
-                color = MaterialTheme.colorScheme.tertiary,
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.size(32.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        uiState.settlements.size.toString(),
-                        color = MaterialTheme.colorScheme.onTertiary,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    }
-                }
-            }
         }
 
         uiState.settlements.forEach { settlement ->
             val fromPerson = uiState.people.find { it.id == settlement.fromPersonId }
             val toPerson = uiState.people.find { it.id == settlement.toPersonId }
             if (fromPerson != null && toPerson != null) {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = slideInHorizontally() + fadeIn(),
-                    exit = slideOutHorizontally() + fadeOut()
-                ) {
-                    SettlementCard(fromPerson.name, toPerson.name, settlement.amount)
-                }
+                SettlementCard(fromPerson.name, toPerson.name, settlement.amount)
             }
         }
     }
+}
 
 
 @Composable
 private fun SettlementCard(fromName: String, toName: String, amount: Double) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        ),
-        shape = RoundedCornerShape(12.dp)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    fromName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Text("↓ owes", style = MaterialTheme.typography.labelSmall)
-                }
-                Text(
-                    toName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(fromName, fontWeight = FontWeight.Bold)
+                Text("owes $toName", style = MaterialTheme.typography.bodySmall)
             }
-            Surface(
-                color = MaterialTheme.colorScheme.tertiary,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        "₹${amount.format(2)}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                    )
-                }
-            }
+            Text("₹${amount.format(2)}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
         }
     }
 }

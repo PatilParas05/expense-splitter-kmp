@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.paraspatil.expensesplitter.domain.model.Person
@@ -18,6 +19,60 @@ import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
 import org.paraspatil.expensesplitter.presentation.ExpenseUiState
 import org.paraspatil.expensesplitter.ui.components.utils.format
 
+@Composable
+fun PeopleTab(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        AddPersonCard(viewModel, uiState)
+
+        HorizontalDivider()
+
+        Text("Group Members", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        uiState.people.forEach { person ->
+            CompactPersonCard(
+                person = person,
+                balance = uiState.balances[person.id] ?: 0.0,
+                onDelete = { viewModel.removePerson(person.id) }
+            )
+        }
+    }
+}
+
+@Composable
+fun CompactPersonCard(person: Person, balance: Double, onDelete: () -> Unit) {
+    val balanceColor = when {
+        balance > 0.1 -> Color(0xFF2E7D32) // Green
+        balance < -0.1 -> Color(0xFFC62828) // Red
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Avatar Circle
+            Surface(Modifier.size(40.dp), shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(person.name.take(1).uppercase(), fontWeight = FontWeight.Bold)
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Text(person.name, Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = if (balance >= 0) "is owed ₹${balance.format(2)}" else "owes ₹${(-balance).format(2)}",
+                    color = balanceColor,
+                    style = MaterialTheme.typography.labelSmall
+                )
+                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
 @Composable
 fun AddPersonCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
     Card(

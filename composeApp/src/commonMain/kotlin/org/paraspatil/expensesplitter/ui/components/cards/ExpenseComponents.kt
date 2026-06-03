@@ -4,10 +4,10 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -31,13 +31,69 @@ import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
 import org.paraspatil.expensesplitter.presentation.ExpenseUiState
 import org.paraspatil.expensesplitter.ui.components.utils.format
 
+@Composable
+fun ExpenseTab(uiState: ExpenseUiState){
+    if (uiState.expenses.isEmpty()){
+        EmptyStatePlaceholder("No expenses added yet.")
+    }else{
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Expense History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            uiState.expenses.reversed().forEach { expense ->
+                ExpenseListItem(expense, uiState.people)
+            }
+        }
+    }
+}
 
+@Composable
+fun EmptyStatePlaceholder(message: String) {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "📋",
+                style = MaterialTheme.typography.displayMedium
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun ExpenseListItem(expense: Expense, people: List<Person>) {
+    val payer = people.find { it.id == expense.paidBy }?.name ?: "Unknown"
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(expense.description.ifBlank { "Expense" }, fontWeight = FontWeight.Bold)
+                Text("Paid by $payer", style = MaterialTheme.typography.labelSmall)
+            }
+            Text("₹${expense.amount.format(2)}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        }
+    }
+}
 @Composable
 fun AddExpenseCard(viewModel: ExpenseViewModel, uiState: ExpenseUiState) {
     var expandSplitOptions by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
             .shadow(6.dp, RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -364,48 +420,7 @@ fun RadioButtonItem(
 }
 
 @Composable
-fun ExpensesSection(uiState: ExpenseUiState) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                "Expenses",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.size(32.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        uiState.expenses.size.toString(),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        uiState.expenses.forEach { expense ->
-            AnimatedVisibility(
-                visible = true,
-                enter = slideInHorizontally() + fadeIn(),
-                exit = slideOutHorizontally() + fadeOut()
-            ) {
-                ExpenseCard(expense, uiState.people)
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExpenseCard(expense: Expense, people: List<Person>) {
+fun ExpenseCard(expense: Expense, people: List<Person>) {
     val paidByPerson = people.find { it.id == expense.paidBy }
 
     Card(
@@ -458,6 +473,12 @@ private fun ExpenseCard(expense: Expense, people: List<Person>) {
                         )
                     }
                 }
+                Text(
+                    "₹${expense.amount.format(2)}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

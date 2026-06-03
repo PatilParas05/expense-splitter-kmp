@@ -1,10 +1,9 @@
 package org.paraspatil.expensesplitter.ui.screens
 
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,12 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import org.paraspatil.expensesplitter.presentation.ExpenseViewModel
 import org.paraspatil.expensesplitter.ui.components.cards.AddExpenseCard
-import org.paraspatil.expensesplitter.ui.components.cards.AddPersonCard
-import org.paraspatil.expensesplitter.ui.components.cards.ExpensesSection
-import org.paraspatil.expensesplitter.ui.components.cards.PeopleSection
+import org.paraspatil.expensesplitter.ui.components.cards.ExpenseTab
+import org.paraspatil.expensesplitter.ui.components.cards.PeopleTab
 import org.paraspatil.expensesplitter.ui.components.drawer.NavigationDrawerContent
 import org.paraspatil.expensesplitter.ui.components.sections.*
 
@@ -28,6 +28,10 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var showAddExpenseSheet by remember { mutableStateOf(false) }
+    val tabs = listOf("Balances", "Expenses", "People")
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -36,68 +40,68 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
     ) {
         Scaffold(
             topBar = {
-                MainTopAppBar(
-                    title = uiState.currentGroupName,
-                    onMenuClick = { scope.launch { drawerState.open() } }
-                )
+                Column {
+                    MainTopAppBar(
+                        title = uiState.currentGroupName,
+                        onMenuClick = { scope.launch { drawerState.open() } }
+                    )
+                    SecondaryTabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        ) {
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = { Text(title) }
+                            )
+                        }
+                    }
+                }
+            },
+            floatingActionButton = {
+
+                FloatingActionButton(
+                    onClick = {
+                        showAddExpenseSheet = true
+                    },
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Expenses")
+                }
             }
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Add Person Section
-                    AddPersonCard(viewModel, uiState)
-
-                    // People Section
-                    if (uiState.people.isNotEmpty()) {
-                        PeopleSection(viewModel, uiState)
-                    }
-
-                    // Add Expense Section
-                    if (uiState.people.isNotEmpty()) {
-                        AddExpenseCard(viewModel, uiState)
-                    }
-
-                    // Expenses Section
-                    if (uiState.expenses.isNotEmpty()) {
-                        ExpensesSection(uiState)
-                    }
-
-                    // Settlements Section
-                    if (uiState.settlements.isNotEmpty()) {
-                        SettlementsSection(uiState)
-                    }
-
-                    // Error Message
-                    if (uiState.errorMessages != null) {
-                        ErrorMessageCard(uiState.errorMessages!!)
-                    }
-
-                    // Reset Button
-                    if (uiState.people.isNotEmpty() || uiState.expenses.isNotEmpty()) {
-                        ResetButton(viewModel)
-                        Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                when (selectedTabIndex) {
+                    0 -> SettlementTab(viewModel,uiState)
+                    1 -> ExpenseTab(uiState)
+                    2 -> PeopleTab(viewModel, uiState)
+                }
+            }
+            if(showAddExpenseSheet){
+                ModalBottomSheet(
+                    onDismissRequest = { showAddExpenseSheet = false },
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                    containerColor = MaterialTheme.colorScheme.surface
+                ){
+                    Box(modifier = Modifier.padding(bottom = 32.dp)){
+                        AddExpenseCard(
+                           viewModel = viewModel,
+                            uiState = uiState
+                        )
                     }
                 }
             }
-
-            // Rename Dialog
             if (uiState.showResetDialog) {
                 RenameSessionDialog(viewModel, uiState)
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
