@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,6 +30,11 @@ fun SettlementsSection(uiState: ExpenseUiState) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(8.dp))
+            SuggestionChip(
+                onClick = {},
+                label = {Text("Simplified", style = MaterialTheme.typography.labelSmall)},
+                icon = {Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(16.dp))},
+            )
             Surface(
                 color = MaterialTheme.colorScheme.tertiary,
                 shape = RoundedCornerShape(20.dp),
@@ -41,6 +47,7 @@ fun SettlementsSection(uiState: ExpenseUiState) {
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
                     )
+                    }
                 }
             }
         }
@@ -59,7 +66,7 @@ fun SettlementsSection(uiState: ExpenseUiState) {
             }
         }
     }
-}
+
 
 @Composable
 private fun SettlementCard(fromName: String, toName: String, amount: Double) {
