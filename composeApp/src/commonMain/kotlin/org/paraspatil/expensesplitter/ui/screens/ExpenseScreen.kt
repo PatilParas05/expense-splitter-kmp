@@ -32,6 +32,8 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
     var showAddExpenseSheet by remember { mutableStateOf(false) }
     val tabs = listOf("Balances", "Expenses", "People")
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -39,6 +41,7 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
         }
     ) {
         Scaffold(
+            snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
             topBar = {
                 Column {
                     MainTopAppBar(
@@ -64,7 +67,16 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
 
                 FloatingActionButton(
                     onClick = {
-                        showAddExpenseSheet = true
+                        if (uiState.people.isEmpty()){
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Please add at least one person first",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }else {
+                            showAddExpenseSheet = true
+                        }
                     },
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     containerColor = MaterialTheme.colorScheme.primary,
