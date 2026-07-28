@@ -1,185 +1,259 @@
-# Expense Splitter KMP
+# 💸 ExpenseSplitter KMP
 
-A Kotlin Multiplatform (KMP) project where I built an expense splitting application with shared business logic and multiplatform targets.
+A modern, cross-platform expense sharing and debt settlement application built using **Kotlin Multiplatform** and **Compose Multiplatform**. Manage group expenses, track balances, and settle debts with a single click across Android, iOS, Desktop, and Web.
 
-## What I built
-
-This repository contains a complete expense-splitting app architecture with:
-
-- **Shared Kotlin module** for business/domain logic.
-- **Android app** using Compose Multiplatform.
-- **iOS integration** via shared Kotlin framework.
-- **Desktop target** (JVM) configuration.
-- **Web target** (WASM/JS) configuration.
-
-The project is structured to maximize code reuse while keeping platform-specific integrations clean.
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9.20-blue.svg?style=flat&logo=kotlin)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.6.0-purple.svg?style=flat&logo=jetpackcompose)
+![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20Wasm-orange.svg)
 
 ---
 
-## Repository structure
+## ✨ Features
 
-```text
-expense-splitter-kmp/
-├── composeApp/               # App layer (Android + Desktop + WASM entry points)
-├── shared/                   # Shared domain/data logic (KMP)
-├── iosApp/                   # iOS Xcode project consuming Shared framework
-├── kotlin-js-store/          # Web storage-related module/assets
-├── gradle/                   # Gradle version catalog & wrapper settings
-├── build.gradle.kts          # Root build configuration
-├── settings.gradle.kts       # Module includes and dependency repositories
-└── README.md
-```
+- **👥 Multi-Person Groups** — Create sessions and add participants with unique IDs.
+- **💰 Smart Expense Tracking** — Add expenses with descriptions, amounts, and specific payers.
+- **⚖️ Settlement Algorithm** — Greedy matching algorithm minimizes transfers to clear debts.
+- **📁 Session Management** — Save, rename, and switch between different expense groups.
+- **🎨 Material 3 UI** — Adaptive interface with Dark/Light mode support.
+- **🚀 High Performance** — Local-first architecture using Room Database for instant persistence.
 
 ---
 
-## Language composition
+# 🛠 Tech Stack
 
-- **Kotlin**: 93.9%
-- **Swift**: 4.2%
-- **HTML**: 1.9%
-
-This reflects a Kotlin-first KMP codebase with iOS integration and web-facing assets.
-
----
-
-## Platforms and targets configured
-
-From your Gradle setup, this project is configured for:
-
-- **Android** (`androidTarget`)
-- **iOS** (`iosArm64`, `iosSimulatorArm64`)
-- **Desktop JVM** (`jvm("desktop")`)
-- **WASM JS (browser)** (`wasmJs { browser(); binaries.executable() }`)
-
-This is a strong multiplatform setup that supports modern Kotlin target coverage.
+| Layer | Technology |
+|--------|------------|
+| UI Framework | Compose Multiplatform |
+| Language | Kotlin |
+| Architecture | MVVM |
+| Database | Room Multiplatform |
+| Dependency Injection | Koin |
+| ViewModel |  MVVM |
+| Asynchronous Programming | Kotlin Coroutines & Flow |
+| Serialization | Kotlinx Serialization |
 
 ---
 
-## Core technical work done in this repo
+## 🚀 How to Run
 
-### 1) Multiplatform architecture foundation
+### Prerequisites
 
-You set up the project with clear separation between:
+Make sure you have the following installed:
 
-- **`shared` module** for reusable logic.
-- **`composeApp` module** for UI/app-specific behavior.
-- **`iosApp`** for native iOS host integration.
-
-This is the right structure for long-term scalability in KMP apps.
-
-### 2) Expense splitting domain implementation
-
-The domain model and use cases in the shared module include:
-
-- People management
-- Expense recording
-- Split calculations
-- Settlement calculations
-
-Your implementation includes multiple split strategies (equal/exact/percentage style separation), which is a good abstraction for extending business rules later.
-
-### 3) Settlement algorithm flow
-
-You implemented a settlement calculation flow that reduces balances into payable transfers (debtor/creditor style matching), enabling user-friendly “who pays whom” output.
-
-### 4) Shared ViewModel approach
-
-You used a shared ViewModel pattern in KMP (with MOKO MVVM) to keep state/business flow portable across platforms while still allowing platform-native presentation.
-
-### 5) Dependency injection and modularization
-
-You introduced **Koin** in shared and platform areas, enabling cleaner dependency management and improved testability as the app grows.
-
-### 6) Local persistence groundwork
-
-You configured **Room + KSP** for supported targets and explicitly avoided unsupported WASM paths, showing careful target-aware engineering.
-
-### 7) Cross-platform storage strategy awareness
-
-You kept target-specific constraints in mind:
-
-- Room for Android/Desktop-class targets.
-- Browser target separated from Room usage.
-
-This is exactly how KMP persistence should be approached.
-
-### 8) Build and packaging setup
-
-You configured:
-
-- Android app settings (SDK, packaging exclusions, release build type).
-- Desktop distribution formats (**DMG/MSI/DEB**).
-- WASM browser output.
-
-This means the project is already aligned for multi-platform distribution workflows.
+- JDK 17+
+- Android Studio Hedgehog or newer
 
 ---
 
-## Key dependencies and why they matter
+## 📱 Android
 
-- **Kotlin Coroutines**: async/state handling across platforms.
-- **Koin**: dependency injection in common and platform code.
-- **MOKO MVVM**: shared ViewModel/state pattern for KMP.
-- **UUID library**: multiplatform-safe identifier generation.
-- **Room + KSP**: persistence and code generation where supported.
-- **Compose Multiplatform / Material 3**: modern declarative UI.
+### Using Android Studio
 
----
+1. Open the project.
+2. Select **composeApp** as the run configuration.
+3. Click **Run**.
 
-## Build commands
+### Using Terminal
 
-### Android build
+**Android Studio**
 
 ```bash
-./gradlew :composeApp:assembleDebug
+.\gradlew :composeApp:installDebug
 ```
 
-### Shared tests
+---
+
+## 💻 Desktop (Windows, macOS, Linux)
+
+Run the native desktop application.
+
+**Android Studio**
 
 ```bash
-./gradlew :shared:allTests
+.\gradlew :composeApp:run
 ```
 
-### Desktop run/package
+---
 
-Use Compose Desktop tasks from `composeApp` (run/package tasks available through Gradle tooling and IDE integration).
+## 🌐 Web (Wasm JS)
 
-### iOS
+Compile Kotlin to WebAssembly and launch the browser.
 
-Open the Xcode project in `iosApp/` and run using simulator/device after syncing the shared framework.
+**Android Studio**
+
+```bash
+.\gradlew :composeApp:wasmJsBrowserRun
+```
+
+
+Open your browser and visit:
+
+```
+http://localhost:8080
+```
 
 ---
 
-## What is done well (project strengths)
 
-- ✅ Strong **multiplatform-first** architecture.
-- ✅ Good **module separation** between shared logic and app hosts.
-- ✅ Thoughtful **target-specific persistence strategy**.
-- ✅ Modern stack choices (Compose, Koin, Coroutines, Room, KSP).
-- ✅ Scalable split/settlement business logic design.
-- ✅ Desktop and WASM targets included early (future-ready setup).
+## 🧮 Expense Splitting Logic
+
+The application doesn't simply divide numbers—it intelligently minimizes the number of transactions using a **Greedy Settlement Algorithm**.
 
 ---
 
-## Suggested next improvements
+## ✅ Supported Split Types
 
-To make the repo even stronger, consider adding:
+### 1. Equal Split
 
-1. **Screenshots/GIFs** for Android/iOS/Desktop UI.
-2. **Architecture diagram** (data flow + module dependencies).
-3. **Test coverage summary** for settlement/split edge cases.
-4. **CI workflow** (build + test for PRs).
-5. **Release notes/changelog** as features evolve.
-6. **Contribution guide** (`CONTRIBUTING.md`) and issue templates.
+The total expense is divided equally among all participants.
+
+Example:
+
+Expense = ₹1200
+
+Participants = 3
+
+Each person owes:
+
+```
+₹400
+```
 
 ---
 
-## About this project
+### 2. Exact Split
 
-This repository demonstrates practical Kotlin Multiplatform development for a real-world finance utility app, with shared business logic and multi-target deployment foundations.
+Each participant pays a manually specified amount.
 
-If you want, I can next generate:
+Example:
 
-- a polished **README with badges + screenshots placeholders**,
-- a **developer setup guide** (`docs/setup.md`), and
-- a **CI GitHub Actions workflow** for Android/shared checks.
+| Person | Amount |
+|---------|--------|
+| Alice | ₹500 |
+| Bob | ₹300 |
+| Charlie | ₹400 |
+
+Total = ₹1200
+
+---
+
+### 3. Percentage Split
+
+Expenses are divided according to percentages.
+
+Example:
+
+| Person | Percentage |
+|---------|------------|
+| Alice | 50% |
+| Bob | 30% |
+| Charlie | 20% |
+
+Expense = ₹1000
+
+Result:
+
+- Alice → ₹500
+- Bob → ₹300
+- Charlie → ₹200
+
+---
+
+## ⚡ Greedy Settlement Algorithm
+
+The goal is to **minimize the total number of money transfers**.
+
+Instead of asking everyone to pay everyone else, the algorithm computes the smallest possible set of transactions.
+
+---
+
+## Step 1 — Calculate Net Balance
+
+For each participant:
+
+```
+Net Balance = Total Paid − Total Share
+```
+
+### Positive Balance (+)
+
+The participant paid more than their share.
+
+➡️ They should receive money.
+
+### Negative Balance (-)
+
+The participant paid less than their share.
+
+➡️ They owe money.
+
+---
+
+## Step 2 — Match Debtors and Creditors
+
+The algorithm repeatedly:
+
+- Finds the person who owes the most.
+- Finds the person who should receive the most.
+- Creates a transaction between them.
+- Updates both balances.
+
+---
+
+## Step 3 — Repeat
+
+Continue matching until every participant's balance becomes zero.
+
+---
+
+# 📌 Example
+
+Suppose:
+
+Alice pays **₹1200** for Bob and Charlie.
+
+Each person should pay:
+
+```
+₹400
+```
+
+Balances become:
+
+| Person | Balance |
+|---------|---------|
+| Alice | +₹800 |
+| Bob | -₹400 |
+| Charlie | -₹400 |
+
+Optimized settlement:
+
+```
+Bob  → Alice : ₹400
+Charlie → Alice : ₹400
+```
+
+Only **2 transactions** are required.
+
+---
+
+
+## 🤝 Contributing
+
+Contributions are welcome! If you'd like to improve the settlement algorithm, add new split types (Percentage/Exact), or improve the UI:
+1. Fork the Project.
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the Branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+**Developed with ❤️ using Kotlin Multiplatform**
+
+
