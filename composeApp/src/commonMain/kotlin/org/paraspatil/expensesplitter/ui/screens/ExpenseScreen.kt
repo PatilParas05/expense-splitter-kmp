@@ -80,7 +80,7 @@ fun ExpenseScreen(viewModel: ExpenseViewModel) {
                     },
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 72.dp)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add Expenses")
                 }
