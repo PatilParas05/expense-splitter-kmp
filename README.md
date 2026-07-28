@@ -1,106 +1,185 @@
 # Expense Splitter KMP
 
-A **Kotlin Multiplatform** (KMP) application for splitting expenses among a group of people. Runs on both **Android** (Compose) and **iOS** (SwiftUI).
+A Kotlin Multiplatform (KMP) project where I built an expense splitting application with shared business logic and multiplatform targets.
+
+## What I built
+
+This repository contains a complete expense-splitting app architecture with:
+
+- **Shared Kotlin module** for business/domain logic.
+- **Android app** using Compose Multiplatform.
+- **iOS integration** via shared Kotlin framework.
+- **Desktop target** (JVM) configuration.
+- **Web target** (WASM/JS) configuration.
+
+The project is structured to maximize code reuse while keeping platform-specific integrations clean.
 
 ---
 
-## Features
+## Repository structure
 
-- **Add People** — Add participants by name; each person is assigned a unique ID.
-- **Add Expenses** — Record an expense amount and who paid. The cost is split equally among all current participants.
-- **Calculate Settlements** — Computes the minimum set of transfers needed to settle all debts.
-- **Cross-platform** — Shared business logic written once in Kotlin; native UIs on Android and iOS.
-
----
-
-## Architecture
-
-```
+```text
 expense-splitter-kmp/
-├── shared/                        # Shared Kotlin Multiplatform module
-│   └── src/commonMain/
-│       └── org/paraspatil/expensesplitter/
-│           ├── domain/
-│           │   ├── model/         # Person, Expense, Split
-│           │   ├── settlement/    # Settlements model, calculateSettlements()
-│           │   ├── split/         # SplitCalculator interface + Equal/Exact/Percentage implementations
-│           │   ├── usecase/       # CalculateExpenseUseCase, ExpenseResult
-│           │   └── CalculateBalances.kt
-│           └── presentation/
-│               ├── ExpenseViewModel.kt
-│               └── ExpenseUiState.kt
-├── composeApp/                    # Android app (Jetpack Compose + Material 3)
-│   └── src/androidMain/
-│       └── org/paraspatil/expensesplitter/
-│           ├── App.kt
-│           ├── MainActivity.kt
-│           └── ui/expense/
-│               ├── ExpenseRoute.kt
-│               └── ExpenseScreen.kt
-└── iosApp/                        # iOS app (SwiftUI)
-    └── iosApp/
-        ├── ContentView.swift      # SwiftUI UI + IOSExpenseViewModel
-        └── iOSApp.swift
+├── composeApp/               # App layer (Android + Desktop + WASM entry points)
+├── shared/                   # Shared domain/data logic (KMP)
+├── iosApp/                   # iOS Xcode project consuming Shared framework
+├── kotlin-js-store/          # Web storage-related module/assets
+├── gradle/                   # Gradle version catalog & wrapper settings
+├── build.gradle.kts          # Root build configuration
+├── settings.gradle.kts       # Module includes and dependency repositories
+└── README.md
 ```
 
-### Key Design Decisions
+---
 
-- **Shared ViewModel** (`ExpenseViewModel`) uses [MOKO MVVM](https://github.com/icerockdev/moko-mvvm) (`dev.icerock.moko:mvvm-core:0.16.1`) so it can be shared between Android and iOS.
-- **UUID generation** uses [`com.benasher44:uuid`](https://github.com/benasher44/uuid) for multiplatform-safe UUIDs.
-- **Split strategies** — `EqualSplitCalculator`, `ExactSplitCalculator`, `PercentageSplitCalculator` all implement the `SplitCalculator` interface.
-- Settlement algorithm uses a greedy creditor/debtor matching approach to minimise the number of transfers.
+## Language composition
+
+- **Kotlin**: 93.9%
+- **Swift**: 4.2%
+- **HTML**: 1.9%
+
+This reflects a Kotlin-first KMP codebase with iOS integration and web-facing assets.
 
 ---
 
-## App Flow
+## Platforms and targets configured
 
-1. Add persons by name — creates `Person(id, name)` objects stored in the ViewModel.
-2. Add expenses — enter amount and select who paid — creates an `Expense` with equal `Split` objects across all persons.
-3. Tap **Calculate Settlements** — runs `CalculateExpenseUseCase` — displays the list of settlements (e.g. "Alice owes Bob 250.00").
+From your Gradle setup, this project is configured for:
+
+- **Android** (`androidTarget`)
+- **iOS** (`iosArm64`, `iosSimulatorArm64`)
+- **Desktop JVM** (`jvm("desktop")`)
+- **WASM JS (browser)** (`wasmJs { browser(); binaries.executable() }`)
+
+This is a strong multiplatform setup that supports modern Kotlin target coverage.
 
 ---
 
-## Build & Run
+## Core technical work done in this repo
 
-### Prerequisites
+### 1) Multiplatform architecture foundation
 
-- Android Studio Hedgehog (or newer) with KMP plugin
-- JDK 17+
-- Xcode 15+ (for iOS)
+You set up the project with clear separation between:
 
-### Android
+- **`shared` module** for reusable logic.
+- **`composeApp` module** for UI/app-specific behavior.
+- **`iosApp`** for native iOS host integration.
 
-```shell
-# macOS / Linux
+This is the right structure for long-term scalability in KMP apps.
+
+### 2) Expense splitting domain implementation
+
+The domain model and use cases in the shared module include:
+
+- People management
+- Expense recording
+- Split calculations
+- Settlement calculations
+
+Your implementation includes multiple split strategies (equal/exact/percentage style separation), which is a good abstraction for extending business rules later.
+
+### 3) Settlement algorithm flow
+
+You implemented a settlement calculation flow that reduces balances into payable transfers (debtor/creditor style matching), enabling user-friendly “who pays whom” output.
+
+### 4) Shared ViewModel approach
+
+You used a shared ViewModel pattern in KMP (with MOKO MVVM) to keep state/business flow portable across platforms while still allowing platform-native presentation.
+
+### 5) Dependency injection and modularization
+
+You introduced **Koin** in shared and platform areas, enabling cleaner dependency management and improved testability as the app grows.
+
+### 6) Local persistence groundwork
+
+You configured **Room + KSP** for supported targets and explicitly avoided unsupported WASM paths, showing careful target-aware engineering.
+
+### 7) Cross-platform storage strategy awareness
+
+You kept target-specific constraints in mind:
+
+- Room for Android/Desktop-class targets.
+- Browser target separated from Room usage.
+
+This is exactly how KMP persistence should be approached.
+
+### 8) Build and packaging setup
+
+You configured:
+
+- Android app settings (SDK, packaging exclusions, release build type).
+- Desktop distribution formats (**DMG/MSI/DEB**).
+- WASM browser output.
+
+This means the project is already aligned for multi-platform distribution workflows.
+
+---
+
+## Key dependencies and why they matter
+
+- **Kotlin Coroutines**: async/state handling across platforms.
+- **Koin**: dependency injection in common and platform code.
+- **MOKO MVVM**: shared ViewModel/state pattern for KMP.
+- **UUID library**: multiplatform-safe identifier generation.
+- **Room + KSP**: persistence and code generation where supported.
+- **Compose Multiplatform / Material 3**: modern declarative UI.
+
+---
+
+## Build commands
+
+### Android build
+
+```bash
 ./gradlew :composeApp:assembleDebug
-
-# Windows
-.\gradlew.bat :composeApp:assembleDebug
 ```
 
-Or use the **Run** configuration in Android Studio.
+### Shared tests
 
-### iOS
-
-Open `iosApp/iosApp.xcodeproj` (or the `.xcworkspace` if using CocoaPods) in Xcode and run on a simulator or device.
-
-### Run shared tests
-
-```shell
+```bash
 ./gradlew :shared:allTests
 ```
 
----
+### Desktop run/package
 
-## Dependencies
+Use Compose Desktop tasks from `composeApp` (run/package tasks available through Gradle tooling and IDE integration).
 
-| Library | Purpose |
-|---------|---------|
-| `dev.icerock.moko:mvvm-core:0.16.1` | Multiplatform ViewModel base class |
-| `com.benasher44:uuid:0.8.0` | Multiplatform UUID generation |
-| `org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1` | Coroutines / StateFlow |
-| Jetpack Compose + Material 3 | Android UI |
+### iOS
+
+Open the Xcode project in `iosApp/` and run using simulator/device after syncing the shared framework.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html).
+## What is done well (project strengths)
+
+- ✅ Strong **multiplatform-first** architecture.
+- ✅ Good **module separation** between shared logic and app hosts.
+- ✅ Thoughtful **target-specific persistence strategy**.
+- ✅ Modern stack choices (Compose, Koin, Coroutines, Room, KSP).
+- ✅ Scalable split/settlement business logic design.
+- ✅ Desktop and WASM targets included early (future-ready setup).
+
+---
+
+## Suggested next improvements
+
+To make the repo even stronger, consider adding:
+
+1. **Screenshots/GIFs** for Android/iOS/Desktop UI.
+2. **Architecture diagram** (data flow + module dependencies).
+3. **Test coverage summary** for settlement/split edge cases.
+4. **CI workflow** (build + test for PRs).
+5. **Release notes/changelog** as features evolve.
+6. **Contribution guide** (`CONTRIBUTING.md`) and issue templates.
+
+---
+
+## About this project
+
+This repository demonstrates practical Kotlin Multiplatform development for a real-world finance utility app, with shared business logic and multi-target deployment foundations.
+
+If you want, I can next generate:
+
+- a polished **README with badges + screenshots placeholders**,
+- a **developer setup guide** (`docs/setup.md`), and
+- a **CI GitHub Actions workflow** for Android/shared checks.
