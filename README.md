@@ -1,106 +1,259 @@
-# Expense Splitter KMP
+# 💸 ExpenseSplitter KMP
 
-A **Kotlin Multiplatform** (KMP) application for splitting expenses among a group of people. Runs on both **Android** (Compose) and **iOS** (SwiftUI).
+A modern, cross-platform expense sharing and debt settlement application built using **Kotlin Multiplatform** and **Compose Multiplatform**. Manage group expenses, track balances, and settle debts with a single click across Android, iOS, Desktop, and Web.
 
----
-
-## Features
-
-- **Add People** — Add participants by name; each person is assigned a unique ID.
-- **Add Expenses** — Record an expense amount and who paid. The cost is split equally among all current participants.
-- **Calculate Settlements** — Computes the minimum set of transfers needed to settle all debts.
-- **Cross-platform** — Shared business logic written once in Kotlin; native UIs on Android and iOS.
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9.20-blue.svg?style=flat&logo=kotlin)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.6.0-purple.svg?style=flat&logo=jetpackcompose)
+![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20Wasm-orange.svg)
 
 ---
 
-## Architecture
+## ✨ Features
 
-```
-expense-splitter-kmp/
-├── shared/                        # Shared Kotlin Multiplatform module
-│   └── src/commonMain/
-│       └── org/paraspatil/expensesplitter/
-│           ├── domain/
-│           │   ├── model/         # Person, Expense, Split
-│           │   ├── settlement/    # Settlements model, calculateSettlements()
-│           │   ├── split/         # SplitCalculator interface + Equal/Exact/Percentage implementations
-│           │   ├── usecase/       # CalculateExpenseUseCase, ExpenseResult
-│           │   └── CalculateBalances.kt
-│           └── presentation/
-│               ├── ExpenseViewModel.kt
-│               └── ExpenseUiState.kt
-├── composeApp/                    # Android app (Jetpack Compose + Material 3)
-│   └── src/androidMain/
-│       └── org/paraspatil/expensesplitter/
-│           ├── App.kt
-│           ├── MainActivity.kt
-│           └── ui/expense/
-│               ├── ExpenseRoute.kt
-│               └── ExpenseScreen.kt
-└── iosApp/                        # iOS app (SwiftUI)
-    └── iosApp/
-        ├── ContentView.swift      # SwiftUI UI + IOSExpenseViewModel
-        └── iOSApp.swift
-```
-
-### Key Design Decisions
-
-- **Shared ViewModel** (`ExpenseViewModel`) uses [MOKO MVVM](https://github.com/icerockdev/moko-mvvm) (`dev.icerock.moko:mvvm-core:0.16.1`) so it can be shared between Android and iOS.
-- **UUID generation** uses [`com.benasher44:uuid`](https://github.com/benasher44/uuid) for multiplatform-safe UUIDs.
-- **Split strategies** — `EqualSplitCalculator`, `ExactSplitCalculator`, `PercentageSplitCalculator` all implement the `SplitCalculator` interface.
-- Settlement algorithm uses a greedy creditor/debtor matching approach to minimise the number of transfers.
+- **👥 Multi-Person Groups** — Create sessions and add participants with unique IDs.
+- **💰 Smart Expense Tracking** — Add expenses with descriptions, amounts, and specific payers.
+- **⚖️ Settlement Algorithm** — Greedy matching algorithm minimizes transfers to clear debts.
+- **📁 Session Management** — Save, rename, and switch between different expense groups.
+- **🎨 Material 3 UI** — Adaptive interface with Dark/Light mode support.
+- **🚀 High Performance** — Local-first architecture using Room Database for instant persistence.
 
 ---
 
-## App Flow
+# 🛠 Tech Stack
 
-1. Add persons by name — creates `Person(id, name)` objects stored in the ViewModel.
-2. Add expenses — enter amount and select who paid — creates an `Expense` with equal `Split` objects across all persons.
-3. Tap **Calculate Settlements** — runs `CalculateExpenseUseCase` — displays the list of settlements (e.g. "Alice owes Bob 250.00").
+| Layer | Technology |
+|--------|------------|
+| UI Framework | Compose Multiplatform |
+| Language | Kotlin |
+| Architecture | MVVM |
+| Database | Room Multiplatform |
+| Dependency Injection | Koin |
+| ViewModel |  MVVM |
+| Asynchronous Programming | Kotlin Coroutines & Flow |
+| Serialization | Kotlinx Serialization |
 
 ---
 
-## Build & Run
+## 🚀 How to Run
 
 ### Prerequisites
 
-- Android Studio Hedgehog (or newer) with KMP plugin
+Make sure you have the following installed:
+
 - JDK 17+
-- Xcode 15+ (for iOS)
+- Android Studio Hedgehog or newer
 
-### Android
+---
 
-```shell
-# macOS / Linux
-./gradlew :composeApp:assembleDebug
+## 📱 Android
 
-# Windows
-.\gradlew.bat :composeApp:assembleDebug
-```
+### Using Android Studio
 
-Or use the **Run** configuration in Android Studio.
+1. Open the project.
+2. Select **composeApp** as the run configuration.
+3. Click **Run**.
 
-### iOS
+### Using Terminal
 
-Open `iosApp/iosApp.xcodeproj` (or the `.xcworkspace` if using CocoaPods) in Xcode and run on a simulator or device.
+**Android Studio**
 
-### Run shared tests
-
-```shell
-./gradlew :shared:allTests
+```bash
+.\gradlew :composeApp:installDebug
 ```
 
 ---
 
-## Dependencies
+## 💻 Desktop (Windows, macOS, Linux)
 
-| Library | Purpose |
+Run the native desktop application.
+
+**Android Studio**
+
+```bash
+.\gradlew :composeApp:run
+```
+
+---
+
+## 🌐 Web (Wasm JS)
+
+Compile Kotlin to WebAssembly and launch the browser.
+
+**Android Studio**
+
+```bash
+.\gradlew :composeApp:wasmJsBrowserRun
+```
+
+
+Open your browser and visit:
+
+```
+http://localhost:8080
+```
+
+---
+
+
+## 🧮 Expense Splitting Logic
+
+The application doesn't simply divide numbers—it intelligently minimizes the number of transactions using a **Greedy Settlement Algorithm**.
+
+---
+
+## ✅ Supported Split Types
+
+### 1. Equal Split
+
+The total expense is divided equally among all participants.
+
+Example:
+
+Expense = ₹1200
+
+Participants = 3
+
+Each person owes:
+
+```
+₹400
+```
+
+---
+
+### 2. Exact Split
+
+Each participant pays a manually specified amount.
+
+Example:
+
+| Person | Amount |
+|---------|--------|
+| Alice | ₹500 |
+| Bob | ₹300 |
+| Charlie | ₹400 |
+
+Total = ₹1200
+
+---
+
+### 3. Percentage Split
+
+Expenses are divided according to percentages.
+
+Example:
+
+| Person | Percentage |
+|---------|------------|
+| Alice | 50% |
+| Bob | 30% |
+| Charlie | 20% |
+
+Expense = ₹1000
+
+Result:
+
+- Alice → ₹500
+- Bob → ₹300
+- Charlie → ₹200
+
+---
+
+## ⚡ Greedy Settlement Algorithm
+
+The goal is to **minimize the total number of money transfers**.
+
+Instead of asking everyone to pay everyone else, the algorithm computes the smallest possible set of transactions.
+
+---
+
+## Step 1 — Calculate Net Balance
+
+For each participant:
+
+```
+Net Balance = Total Paid − Total Share
+```
+
+### Positive Balance (+)
+
+The participant paid more than their share.
+
+➡️ They should receive money.
+
+### Negative Balance (-)
+
+The participant paid less than their share.
+
+➡️ They owe money.
+
+---
+
+## Step 2 — Match Debtors and Creditors
+
+The algorithm repeatedly:
+
+- Finds the person who owes the most.
+- Finds the person who should receive the most.
+- Creates a transaction between them.
+- Updates both balances.
+
+---
+
+## Step 3 — Repeat
+
+Continue matching until every participant's balance becomes zero.
+
+---
+
+# 📌 Example
+
+Suppose:
+
+Alice pays **₹1200** for Bob and Charlie.
+
+Each person should pay:
+
+```
+₹400
+```
+
+Balances become:
+
+| Person | Balance |
 |---------|---------|
-| `dev.icerock.moko:mvvm-core:0.16.1` | Multiplatform ViewModel base class |
-| `com.benasher44:uuid:0.8.0` | Multiplatform UUID generation |
-| `org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1` | Coroutines / StateFlow |
-| Jetpack Compose + Material 3 | Android UI |
+| Alice | +₹800 |
+| Bob | -₹400 |
+| Charlie | -₹400 |
+
+Optimized settlement:
+
+```
+Bob  → Alice : ₹400
+Charlie → Alice : ₹400
+```
+
+Only **2 transactions** are required.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html).
+
+## 🤝 Contributing
+
+Contributions are welcome! If you'd like to improve the settlement algorithm, add new split types (Percentage/Exact), or improve the UI:
+1. Fork the Project.
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the Branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+**Developed with ❤️ using Kotlin Multiplatform**
+
+
